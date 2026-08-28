@@ -27,17 +27,42 @@ Confirmed directly on the actual file content across every relevant tag:
 
 | Tag | Has `ValidateExtractionPath`? |
 |---|---|
-| v7.6.4 | Yes |
-| v7.4.19 (LTS) | Yes |
-| v7.5.10 | No |
-| v7.6.5 | No |
+| v7.2.24 | No |
+| v7.4.18 | **Yes** |
+| v7.4.19 (LTS) | **Yes** |
+| v7.5.8 | (not checked) |
+| v7.5.9 | **Yes** |
+| v7.5.10 | **No** |
+| v7.6.0 – v7.6.3 | No |
+| v7.6.4 | **Yes** |
+| v7.6.5 | **No** |
 | `origin/master` | No |
 | v7.7.0-preview.3 | No |
 
+## Sibling confirmed: this is not unique to the 7.6.x line
+
+This is the part directly answering "is a sibling of this bug present in other releases too" —
+yes. **v7.5.10 has the exact same gap as v7.6.5, relative to its own immediate predecessor:**
+`v7.5.9` has `ValidateExtractionPath`, `v7.5.10` (the very next patch, tagged Aug 13 2026 — the
+same day as v7.6.5) does not. Checked the same way as the 7.6.4/7.6.5 pair:
+`git merge-base --is-ancestor v7.5.9 v7.5.10` → **NO** — they diverge at a common ancestor, exactly
+mirroring the v7.6.4/v7.6.5 relationship. This means the *same* release-branching pattern (a
+patch-release branch cut from a point that predates the fix, with no re-backport) happened
+independently in **two separate branch lines in the same patch wave**: 7.5.x and 7.6.x both lost
+it; only 7.4.x (the LTS line, built as a clean linear descendant — confirmed `v7.4.18` *is* an
+ancestor of `v7.4.19`) kept it.
+
+So the current, real-world exposure as of this audit: **the latest published release in both the
+7.5.x and 7.6.x lines (`v7.5.10` and `v7.6.5`) lack this CAB path-traversal protection, and so does
+`master`/the 7.7 preview** — only the 7.4.x LTS line has it. This reads less like an isolated
+one-off backport miss and more like a systemic gap in how the August 2026 patch wave's release
+branches were cut for the two non-LTS lines specifically.
+
 So: this was a coordinated security fix shipped as **targeted, branch-specific backports** to the
-two versions being patched in mid-July 2026 (7.4.19, 7.6.4) — never merged upstream to master.
-When `release/v7.6.5` was cut about a month later (to address a *different* batch of issues — the
-SSH-remoting fix, CIM XSD validation, etc.), nobody opened the equivalent backport PR for it, and
+versions being patched in mid-to-late July 2026 (7.4.18/19, 7.5.9, 7.6.4) — never merged upstream
+to master. When the next patch branches (`release/v7.5.10`, `release/v7.6.5`) were cut about a
+month later (to address a *different* batch of issues — the SSH-remoting fix, CIM XSD validation,
+etc.), nobody opened the equivalent backport PR for either of them, and
 it isn't in master to inherit either. That's why it's absent from 7.5.x and everything after 7.6.4
 in the 7.6.x line, and from the 7.7 preview. **No one reverted anything; the fix simply never
 reached this branch.** The security consequence is unchanged (v7.6.5, current master, and the 7.7
