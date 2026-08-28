@@ -174,3 +174,51 @@ step if pursuing further: either commit to an actual from-source build (hours, l
 spanning multiple sessions) to get a real binary for dynamic confirmation, or narrow Step 4
 further by finding the specific non-WASM call site (if one exists) that constructs an
 unowned, parent-less BSONHolder from the classic `$where`/`$function` path.
+
+## Round 2 (same day) — followed the exact question above; narrowed further, still no confirmed reachable gap
+
+Went looking specifically for the "does the classic `$where`/`$function`/`$accumulator`
+path ever create an unowned, parent-less BSONHolder, and is it protected" question left open
+above. Traced the full call chain for all three:
+
+- **`$where`** (`db/matcher/expression_where.cpp` → `db/exec/js_function.cpp`,
+  `JsFunction::runAsPredicate`): calls `_scope->advanceGeneration();` explicitly, once per
+  document, immediately before `execPredicate()`. Protected.
+- **`$function`** (and `$where`'s internal desugaring into `$expr + $function`,
+  `db/exec/expression/evaluate_javascript.cpp`, `exec::expression::evaluate` for
+  `ExpressionFunction`): calls `scope->advanceGeneration();` explicitly, once per document,
+  with the comment *"Invalidate any unowned BSON wrappers retained by JS globals from prior
+  invocations"* — proving the team was specifically aware of this hazard here. This is also
+  the one call site that actually creates the dangerous precondition:
+  `BSONObj thisBSON = args[0].getDocument().toBson();` then
+  `jsExec->callFunction(func, bob.done(), thisBSON)` — `Document::toBson()`
+  (`db/exec/document_value/document.h:344-355`) has its own fast path,
+  `if (isTriviallyConvertible()) return storage().bsonObj();`, which can return the
+  document's *original*, possibly-unowned backing BSONObj rather than a copy. So the one
+  place that actually builds an unowned `thisObj` **is** the one place with the explicit
+  generation-bump guard. Protected.
+- **`$accumulator`** (`db/pipeline/accumulator_js_reduce.cpp`, `AccumulatorJs::startNewGroup`/
+  `processInternal`/the batch-flush path around line 458-479): grepped the whole file for
+  `advanceGeneration` — **zero hits**. This looked at first like the exact asymmetry I was
+  hunting for: two sibling call sites have a specific, commented defense and this one
+  doesn't. Traced whether the missing guard is actually load-bearing here, though, and it
+  isn't: every `jsExec->callFunction(...)` call in this file passes `thisObj` as a literal
+  `{}` (always empty — no document ever bound as `this` for `$accumulator`), and the `args`
+  array is always a freshly-built, owned `BSONArrayBuilder`/`BSONObjBuilder` output
+  (`bob.arr()`/`bob.done()`), populated via `Value::addToBsonArray`/`addToBsonObj`, which
+  serializes by copying bytes into the builder's own buffer at call time — it does not carry
+  forward `Document::toBson()`'s unowned fast path the way `evaluate_javascript.cpp` does.
+  So even though the generation-bump defense is genuinely absent here (worth flagging to
+  MongoDB as an inconsistency/hardening gap on its own merits), I could not find a value that
+  reaches `MozJSImplScope::invoke()` from this file already carrying an unowned, parent-less
+  BSONObj — the precondition for the bug never arises on this path as currently written.
+
+**Conclusion of round 2:** the one place that actually manufactures the dangerous
+precondition (`$function`'s `this`-binding) is already guarded; the one place missing the
+guard (`$accumulator`) doesn't manufacture the precondition in the first place. No
+confirmed, ordinary-user-reachable UAF found this round either — narrower and more
+thoroughly ruled out than round 1, but still a negative result. The `$accumulator`
+missing-guard observation is recorded here in case a future code change (e.g. someone adds
+an `assignFirstArgToThis`-style option to `$accumulator`, or changes how `input` is built)
+reintroduces the precondition without anyone remembering to add the same defense its
+siblings have.
