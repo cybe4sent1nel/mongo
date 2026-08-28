@@ -180,6 +180,28 @@ profile script, a Startup-folder shortcut/script, or any other auto-run location
 running account — executing attacker code the next time PowerShell (or the machine) starts, with
 no further interaction needed beyond the initial help update.
 
+## Contrast: the sibling CIM/XSD fix from the same PR batch *did* propagate correctly
+
+Checked whether the same backport-gap pattern applies to `ScriptWriter.cs`'s XSD-validation fix
+(the other security change in this diff, PR #41071, merged the same week as the CAB fix). It did
+not — that fix is actually in worse shape historically but better shape *now*:
+
+- Pre-fix, cmdletization XML (`.cdxml`) schema validation was **compiled out entirely on
+  PowerShell Core** via `#if CORECLR ... DtdProcessing = DtdProcessing.Ignore ... #endif`, with a
+  comment admitting the xsd resource "is missing in Github, and it's likely ... needs to be
+  reworked to work in .NET Core." Checked this pattern (`DtdProcessing.Ignore` under `#if CORECLR`)
+  across tags: present (broken) in v7.5.9, v7.6.3, v7.6.4, v7.7.0-preview.3; **absent (fixed)** in
+  v7.4.19, v7.5.10, v7.6.5, and current `origin/master`.
+- In other words: this specific validation appears to have been effectively non-functional on
+  PowerShell 7 for **its entire history up to this patch wave** (not just one branch) — but unlike
+  the CAB fix, it *did* get properly forward-ported to master and is present in the latest tag of
+  all three lines (7.4, 7.5, 7.6) by the time of this audit.
+
+This makes the CAB-fix gap more notable, not less: a near-identical, same-week, likely
+same-author security fix landed cleanly everywhere, while the CAB fix specifically didn't — this
+looks like a one-off oversight on that particular fix rather than a blanket process failure
+affecting every security fix from this cycle.
+
 ## External CVE context (which CVE this backport gap most likely leaves unfixed)
 
 Searched for what security fixes shipped in and around this release for context, per the request:
