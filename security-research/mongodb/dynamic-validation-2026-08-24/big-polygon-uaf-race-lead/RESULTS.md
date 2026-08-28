@@ -42,6 +42,5 @@ to confirm/deny instance reuse — neither available in this pass.
 
 ## Status of the other lead in this directory
 
-`prepared-txn-commit-abort-race-lead/` — infrastructure (2-shard sharded cluster) was stood up but
-the actual race test was not completed before this session's container was recycled (see that
-lead's own recovery note). That lead remains open and untested.
+`prepared-txn-commit-abort-race-lead/` — completed 2026-08-28: negative result, the SERVER-130544
+fix holds under the exact adversarial timing tested. See that lead's own `RESULTS.md`.

@@ -6,8 +6,9 @@
 > restart in flight) when the reset happened — no test result had been produced yet, so nothing
 > substantive was lost on the *results* side of this lead, only the infrastructure setup work.
 
-**Status before this pass:** static-only. This document is the plan; `RESULTS.md` in this
-directory (once written) carries the live outcome.
+**Status:** Resolved 2026-08-28 — negative (fix holds). See `RESULTS.md` in this directory for the
+live outcome and `repro_test.py` for the working reproduction script. This document remains as the
+original plan/background for reference.
 
 ## Background — what's already fixed
 
