@@ -1,19 +1,59 @@
-# PowerShell v7.6.5: path-traversal protection REMOVED from CAB extraction (regression, not a fix)
+# PowerShell v7.6.5: CAB-extraction path-traversal fix was never forward-ported to this branch
 
-**Status: CONFIRMED via direct source comparison of the two official tags. This is the headline
-finding of the requested v7.6.4→v7.6.5 diff. Severity: Critical (arbitrary file write → RCE).**
+**Status: CONFIRMED via direct source comparison of the two official tags, then corrected via
+full commit-ancestry analysis (see "Correction" below) after being asked to verify the actual
+commit/PR rather than infer intent from a two-tag diff. Severity: Critical either way (arbitrary
+file write → RCE) — but the *mechanism* is a backport gap, not an active revert.**
+
+## Correction (read this first)
+
+The initial version of this write-up called this a "regression" implying an active revert commit
+undid a fix. That was wrong. Checked `git log v7.6.4..v7.6.5 -- <path>` (commits reachable from
+v7.6.5 but not v7.6.4 that touch this file) and it comes back **empty** — no commit in that range
+touches `CabinetNativeApi.cs` at all, so there is no removal commit or PR to point to.
+
+The real mechanism, found via `git merge-base --is-ancestor`: the fix (`ValidateExtractionPath`,
+from PR #167 "Validate CAB path before expansion") was never merged into `master`. It landed only
+as two independent, branch-specific backport commits, each carrying the identical PR title/number
+but a different commit hash:
+
+| Commit | PR | Ancestor of |
+|---|---|---|
+| `ade8e8f9b` | "Merged PR 40623: Validate CAB path before expansion (#167)" | **v7.6.4 only** |
+| `bc43c9297` | "Merged PR 40624: Validate CAB path before expansion (#167)" | **v7.4.19 (LTS) only** |
+| `9b38a631d` | "Merged PR 40609: Validate CAB path before expansion (#167)" | neither of the above, nor master |
+
+Confirmed directly on the actual file content across every relevant tag:
+
+| Tag | Has `ValidateExtractionPath`? |
+|---|---|
+| v7.6.4 | Yes |
+| v7.4.19 (LTS) | Yes |
+| v7.5.10 | No |
+| v7.6.5 | No |
+| `origin/master` | No |
+| v7.7.0-preview.3 | No |
+
+So: this was a coordinated security fix shipped as **targeted, branch-specific backports** to the
+two versions being patched in mid-July 2026 (7.4.19, 7.6.4) — never merged upstream to master.
+When `release/v7.6.5` was cut about a month later (to address a *different* batch of issues — the
+SSH-remoting fix, CIM XSD validation, etc.), nobody opened the equivalent backport PR for it, and
+it isn't in master to inherit either. That's why it's absent from 7.5.x and everything after 7.6.4
+in the 7.6.x line, and from the 7.7 preview. **No one reverted anything; the fix simply never
+reached this branch.** The security consequence is unchanged (v7.6.5, current master, and the 7.7
+preview all currently lack this validation) but the causal story is a release-process gap, not a
+deliberate or accidental code change — correcting that here since it matters for how this should
+be reported and framed.
 
 ## Summary
 
-`git diff v7.6.4 v7.6.5` shows that the entire path-traversal protection in PowerShell's CAB
-(help-content) extraction code — a function called `ValidateExtractionPath`, present in **v7.6.4**
-— was **deleted** in **v7.6.5**, and both of its call sites were reverted to naive, unvalidated
-path construction. This is not a partial regression or an edge case: the whole defensive function
-is gone, and nothing replaces it. The newer, "patched" release is the one that is currently
-vulnerable to a classic Zip-Slip/Cab-Slip path traversal in `Update-Help`/`Save-Help`, one that a
-public CVE (very likely CVE-2026-70337, see "External CVE context" below) appears to have been
-issued to fix — meaning the officially tagged `v7.6.5` source does not actually contain that fix,
-regardless of what Microsoft's advisory claims shipped.
+`git diff v7.6.4 v7.6.5` shows that PowerShell's CAB (help-content) extraction code has no
+path-traversal protection in v7.6.5 — no `ValidateExtractionPath`-equivalent function anywhere,
+and both call sites use naive, unvalidated path construction. v7.6.4 and the 7.4.19 LTS line do
+have this protection (via the branch-specific backports above); v7.6.5, current `master`, and the
+7.7 preview do not. Whatever the intended CVE this closes (see "External CVE context" below), the
+officially tagged `v7.6.5` source — and, more importantly, ongoing mainline development — doesn't
+carry it forward.
 
 ## Direct evidence
 
@@ -87,11 +127,11 @@ split a string on separator characters. `Path.Combine(destPath, remainingPsz1Pat
 back out of `destPath` for every `..` component present. There is no check anywhere in this
 function, or in the sibling `FdintCLOSE_FILE_INFO` case (which now does
 `Path.Combine(destPath, fdin.psz1)` directly, same problem), that the resulting `absoluteFilePath`
-is still inside the intended help directory. Even the leftover `// TODO: Should I catch exceptions
-for the new functions?` comment reads like code that predates the validation being added in the
-first place, suggesting this is a revert/rebase-onto-stale-branch mistake rather than an
-intentional change — the changelog and PR history for v7.6.5 (below) don't mention touching this
-file at all, which is consistent with an accidental reintroduction rather than a deliberate one.
+is still inside the intended help directory. The leftover `// TODO: Should I catch exceptions for
+the new functions?` comment is original, pre-fix code — this is exactly what the file looked like
+before PR #167 was ever written; v7.6.5 was simply never given that patch (see "Correction" above
+for the confirmed mechanism: two branch-specific backports, neither targeting this branch, and
+nothing merged to master).
 
 ## Reachability
 
@@ -115,7 +155,7 @@ profile script, a Startup-folder shortcut/script, or any other auto-run location
 running account — executing attacker code the next time PowerShell (or the machine) starts, with
 no further interaction needed beyond the initial help update.
 
-## External CVE context (why this looks like a regression of an already-assigned CVE)
+## External CVE context (which CVE this backport gap most likely leaves unfixed)
 
 Searched for what security fixes shipped in and around this release for context, per the request:
 
@@ -131,10 +171,11 @@ Searched for what security fixes shipped in and around this release for context,
   traversal** issue from the same August 2026 Patch Tuesday batch, with Microsoft's own advisory
   oddly citing a "PowerShell 7.6.5" as the fixed version before that tag existed publicly (flagged
   by the PowerShell team itself: [PowerShell/PowerShell#27834](https://github.com/PowerShell/PowerShell/issues/27834)).
-  Given the description (path traversal, PowerShell Core, same patch wave) and that this is the
-  *only* path-traversal-shaped change in the entire v7.6.4→v7.6.5 diff, this is almost certainly
-  the CVE this `ValidateExtractionPath` function was written to close — and its removal in the
-  actual tagged v7.6.5 source means the shipped fix didn't take, at least not in this branch/tag.
+  Given the description (path traversal, PowerShell Core, same general timeframe) and that
+  `ValidateExtractionPath` is the only path-traversal-shaped fix found in this codebase, this is
+  the leading candidate for the CVE PR #167 was written to close — and its absence from v7.6.5
+  (and master) means that CVE's protection isn't present in ongoing/current PowerShell, regardless
+  of what shipped in the 7.4.19/7.6.4 point releases specifically.
 - **CVE-2026-70338** (CWE-94, code generation/"auth bypass") — matches the *other* notable change
   in this diff, `ScriptWriter.cs`'s "Add the xsd validation back for CIM cmdlets" (restoring XSD
   schema validation for `.cdxml` cmdletization files, plus a new `invalid_verb.cdxml` test asset).
@@ -150,9 +191,10 @@ Searched for what security fixes shipped in and around this release for context,
 
 None of the above CVE mappings to `RunspaceConnectionInfo.cs`/`ScriptWriter.cs` were assumed —
 each is corroborated by matching the public description to the actual code change. The
-`CabinetNativeApi.cs` regression is the one piece of this diff where the *source code* and the
-*claimed fix* disagree, which is exactly why it's flagged here as the primary finding rather than
-confirmation of an existing fix.
+`CabinetNativeApi.cs` case is the one piece of this diff where the *fixed* branches (7.4.19,
+7.6.4) and the *current* branches (7.6.5, master, 7.7 preview) disagree — which is why it's
+flagged here as the primary finding even though, per the correction above, it isn't an active
+regression.
 
 ## Suggested verification / next step
 
