@@ -100,14 +100,53 @@ message-size ceiling, pre-auth/post-auth classification), this is now seven inde
 intact pre-auth hardening mechanisms in `r8.3.8`. No fresh pre-auth crash/DoS bug found across either
 pass.
 
+## 5. TLS handshake certificate/extension parsing (`ssl_manager_openssl.cpp`) — reviewed
+
+Followed up on the two remaining candidates flagged in the 2026-08-24 static audit:
+
+- **Custom X.509 extension DER parser** (`parsePeerRoles`/`parseDERString`/`parseTLSFeature`,
+  `ssl_manager.cpp:1158-1264`, reached from `_parsePeerExtensions`/`_parseTLSFeature` in
+  `ssl_manager_openssl.cpp:3569-3631`, which run against the mongodbRoles/clusterMembership/TLS-feature
+  extensions of a peer's client certificate during the TLS handshake — genuinely pre-auth-reachable
+  whenever mutual TLS is in use). This is a hand-rolled, non-recursive DER parser: `DERToken::parse`
+  computes the declared length via an explicitly overflow-checked add
+  (`overflow::add(tagAndLengthByteCount, derLength, outLength)`) and rejects anything exceeding the
+  actual buffer (`*outLength > cdr.length()`) before any data is touched, and the SET/SEQUENCE walk
+  in `parsePeerRoles` never recurses — it only expects a fixed, shallow SET-of-SEQUENCE-of-two-strings
+  shape and cleanly errors on anything else via a type-tag check, rather than descending into
+  unexpected nested structures. No recursion-based or overflow-based crash found; this reads as
+  code that was already hardened (plausibly from a past incident in this exact area).
+
+- **OCSP response DER-decode null-pointer dereference** — found a **real, but already-fixed** crash
+  bug while reading commit history: `SERVER-128362` (`8d73b22d5`, ancestor of `r8.3.8`) added a
+  missing null check in `ocspClientCallback` (`ssl_manager_openssl.cpp:~2010`) after
+  `d2i_OCSP_RESPONSE(NULL, &response_ptr, length)` — before the fix, a malformed/corrupt DER OCSP
+  staple (`d2i_OCSP_RESPONSE` returns `nullptr` on decode failure) would fall through directly into
+  `verifyStapledResponse(ssl, peerCert.get(), response.get())`, dereferencing a null `OCSP_RESPONSE*`
+  and crashing the process. This fires in `mongod`'s role as the TLS *client* on an outbound
+  connection (OCSP stapling is server-to-client), so exploitability requires mongod to connect
+  outward to a malicious or compromised peer serving a corrupt staple — not a bare unauthenticated
+  listener-side attack, but still a genuine pre-verification crash primitive. **Ran the
+  sibling-bug-hunt technique** used successfully for the BSONColumn finding: searched for every other
+  `d2i_OCSP_RESPONSE` call site (`ssl_manager_openssl.cpp:770` and `:2013`) to check whether the same
+  missing-null-check pattern was left unfixed anywhere else. It wasn't — the other call site
+  (`retrieveOCSPResponse`, mongod's own OCSP-staple-refresh path) already had its own independent
+  null check (`if (response == nullptr) { return getSSLFailure(...); }`) even before this fix, so
+  there's no unpatched sibling. Not pursued as a submission: already fixed upstream, and even
+  unfixed it wouldn't be reachable from a bare pre-auth listener-side connection.
+
 ## Remaining not-yet-covered pre-auth surfaces (candidates for a future round)
 
-- X.509 certificate/DN parsing during the TLS handshake itself (as opposed to the post-handshake
-  SASL-MONGODB-X509 mechanism logic, which was touched by `SERVER-127863` — see below).
-- OCSP stapling/validation callback path (`ocspClientCallback`, touched by a recent null-check fix,
-  `SERVER-128362` — worth a dedicated look, not attempted this round for time).
 - Proxy-protocol parsing (`SERVER-128387` recently removed role-parsing from it — worth checking
   what remains).
+- Standard X.509 fields (CN/SAN) extraction for hostname matching against the ASN1_STRING data
+  pointer (`ssl_manager_openssl.cpp:3459`, `std::string(reinterpret_cast<char*>(ASN1_STRING_data(...)))`)
+  — noticed this is the classic C-string-from-ASN1_STRING pattern historically associated with
+  embedded-NUL-byte hostname spoofing in other TLS stacks. Not chased further: (a) this is an
+  authentication/spoofing concern, not a crash/DoS, out of this round's stated scope; (b) the
+  function's own parameter names/RFC-2818 comment indicate it's mongod's *client*-side verification
+  of a peer *server*'s certificate (outbound connections), not something a bare unauthenticated
+  listener-side connection can reach directly. Worth a dedicated authz-focused pass, not a DoS one.
 
 ## Adjacent, non-DoS finding noticed while reading recent commits (not this round's target, noted for completeness)
 
