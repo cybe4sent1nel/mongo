@@ -94,3 +94,29 @@ lead this round is the same: WordPress's own escaping/validation primitives
 used correctly and consistently at the actual point where untrusted data would otherwise become
 dangerous, even when the *call site itself* looks unescaped in isolation. That's a genuine
 property of this codebase's design, not an accident of what got checked.
+
+## Addendum: Create Block Theme's font/media download path — already deliberately hardened
+
+Followed up on the file-write surface flagged as not fully checked in round 1
+(`theme-fonts.php`/`theme-media.php`, the actual per-file names for downloaded font/image assets,
+as opposed to the theme *slug* already ruled out). Found the opposite of a fresh bug: this is the
+most deliberately hardened code encountered in the whole audit.
+
+`CBT_Theme_Fonts::is_allowed_font_url()` and `CBT_Theme_Media::is_allowed_media_url()` (explicitly
+cross-referencing each other in their docblocks as mirrored logic) both reject any URL whose
+basename has *any* dot-separated segment matching a dangerous-extension denylist (`php`, `phtml`,
+`phar`, `php3`-`php8`, `phps`, `html`, `htaccess`, `cgi`, `pl`, `py`, `rb`, `sh`, `asp`, `jsp`,
+`js`, `mjs`, etc.) — specifically to close off the classic multi-extension polyglot bypass
+(`evil.php.woff2`, `shell.php.jpg`) before even checking the allowlist. On top of that,
+`is_allowed_font_file()` does **magic-byte verification** of the downloaded body against the claimed
+extension (`wOF2`/`wOFF`/`OTTO`/TTF-signature/EOT-version-field), with an explicit comment
+explaining *why* MIME-sniffing via `finfo`/`wp_check_filetype_and_ext()` wasn't trusted here
+(no font MIMEs in WP core's registry, libmagic version variance) — i.e., this reads as a
+considered, deliberate design decision, not an oversight. `make_filename_from_fontface()` builds
+the actual on-disk filename via `sanitize_title()` on every component, closing off path traversal
+via font-face metadata too.
+
+This isn't a new finding — it's confirmation that this specific file-upload surface, which *looks*
+exactly like the shape of bug this audit is hunting for, already received real security attention.
+Worth recording precisely because it explains part of why this audit keeps coming up empty: this
+isn't unaudited code.
