@@ -181,6 +181,25 @@ RCE, SQLi, XSS, auth bypass, privilege escalation, IDOR/broken access control, a
 impact are being hunted from here on. Round 6 (SCF bidirectional-field broken access control)
 remains the audit's one confirmed, in-scope, reportable finding.
 
+## Round 18: second confirmed finding — SCF gallery `ajax_get_sort_order` IDOR (Low severity)
+
+Round 17 dynamically re-verified Create Block Theme's REST authz boundary (clean) and audited every
+`ACF_Ajax` subclass's capability checks in Secure Custom Fields, finding one gap by static read:
+`ACF_Field_Gallery::ajax_get_sort_order()` checks a valid field-key-bound nonce but never checks
+read access on the attacker-supplied attachment IDs it queries — unlike its two sibling functions in
+the same file, which both add the missing object-level `current_user_can()` check on top of the
+identical nonce gate. Round 18 built the fixture needed to reproduce this over real HTTP (a real
+gallery field, an Administrator-owned `private` post with a real attachment, and a genuine
+Contributor session) and confirmed it: the Contributor's own, legitimately-obtained nonce for their
+own unrelated gallery field was accepted to query existence/sort-order data for the Administrator's
+private attachment, with a negative control showing the sibling function correctly denies the
+identical request. This is real, reproducible Missing Authorization / IDOR (CWE-639/CWE-862) — rated
+honestly as **Low severity**, since the only information disclosed is attachment-ID existence and
+relative sort ordering (no title, content, URL, or other metadata). See
+`round17-cbt-authz-dynamic-verify-scf-ajax-audit-sqlite-integration-injection-probe.md` and
+`round18-CONFIRMED-scf-gallery-sort-order-idor.md` for full detail. This is the audit's second
+confirmed, in-scope, reportable finding, alongside round 6.
+
 ## Honest summary
 
 No new SQLi/RCE/stored-XSS vulnerability confirmed in any of the four in-scope plugins this round.

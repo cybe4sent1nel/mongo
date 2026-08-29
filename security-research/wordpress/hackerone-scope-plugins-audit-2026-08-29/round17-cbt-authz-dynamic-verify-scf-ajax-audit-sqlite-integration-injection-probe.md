@@ -129,20 +129,16 @@ attachments belonging to that field's post, or check read access on the requeste
 `post_status => 'any'` means it will match attachments regardless of the visibility of whatever
 post they're attached to.
 
-**Confirmed dynamically is still pending an actual gallery-field-bearing post to get a real
-field-key nonce from (this test install's active field groups don't currently attach a gallery
-field to a post type the test accounts can reach) — recording this as a code-level finding, not
-yet independently reproduced over HTTP, and flagging that distinction explicitly rather than
-overstating verification status.** The static read is unambiguous about the missing check, but the
-practical impact is genuinely narrow even if reproduced: the response leaks only whether a given
-numeric ID is *some* attachment (any status) and, for a submitted ID *set*, their relative order by
-`date` or `title` — no title text, content, URL, or other metadata is returned, only bare IDs. This
-is a real access-control gap (an IDOR in the technical sense: attacker-controlled `ids` with no
-ownership/visibility check), but the information disclosed is minimal — attachment ID existence and
-relative ordering only. Documenting it plainly as a genuine but low-severity gap rather than
-inflating it; not writing this up as a standalone submission on its own given how little it
-actually discloses, but leaving it here as a candidate if further chaining surfaces something that
-makes the leaked ordering/existence data actually useful.
+**Update: reproduced over real HTTP later this same round — see
+`round18-CONFIRMED-scf-gallery-sort-order-idor.md`.** Built the missing fixture (a real gallery
+field via `acf_import_field_group()`, an Administrator-owned `private` post with a real attachment,
+and a genuine Contributor session), and confirmed a Contributor's own, legitimately-obtained nonce
+for their own gallery field is accepted to query sort-order/existence data for an attachment
+belonging to the Administrator's `private` post — with a negative control showing the sibling
+`ajax_get_attachment()` correctly denies the identical request/session. Confirmed as **Low severity**
+(no content/PII disclosed — only attachment-ID existence and relative ordering) but genuinely
+reproducible IDOR / missing authorization (CWE-639/CWE-862). Full detail, root cause, and PoC in
+round 18.
 
 ## Part 4: SQLite Database Integration — adversarial probe of the MySQL→SQLite query translator
 
