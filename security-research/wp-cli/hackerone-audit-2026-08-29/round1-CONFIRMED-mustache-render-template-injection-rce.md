@@ -1,4 +1,26 @@
-# Round 1: CONFIRMED — `WP_CLI\Utils\mustache_render()` disables all output escaping by design, allowing ordinary string CLI parameters to inject arbitrary PHP into generated files (`wp config create`, `wp scaffold plugin`, `wp scaffold post-type`, and every other Mustache-templated file WP-CLI writes)
+# Round 1: CONFIRMED (technically) but likely N/A under WP-CLI's own trust model — `WP_CLI\Utils\mustache_render()` disables all output escaping, allowing ordinary string CLI parameters to inject arbitrary PHP into generated files
+
+> **REPORTABILITY CORRECTION, added after review — read this before the rest of the file.**
+> WP-CLI's own published security-reporting guidance (`make.wordpress.org/cli/handbook/contributions/security-vulnerability-reporting/`)
+> states the threat model plainly: *"WP-CLI runs as a trusted local user by design: someone who can
+> already execute `wp` on a server can generally already act as that user, so that alone is not a
+> privilege boundary,"* and *"a vulnerability report needs to show how someone outside a trust boundary
+> gains something they could not otherwise obtain."* Everything below is technically confirmed with real
+> execution — the code does exactly what's described — but as framed (an operator supplying their own
+> `--dbname`/`--plugin_name` at their own terminal), this does not cross that trust boundary any more than
+> `wp eval` does: whoever can run the vulnerable command could already run `wp eval '<?php ...'` or write
+> a file directly. The one thing that could rescue this — a path where WP-CLI's *own* supported machinery
+> feeds a value originating from *outside* the trust boundary (e.g. read back from the WordPress database
+> by an already-running, already-privileged automated/cron invocation) into `mustache_render()` — was
+> looked for and not found for either confirmed call site: `wp config create` runs before a database
+> exists to read from, and `wp scaffold plugin` is an interactive developer command. The "an automated
+> hosting/provisioning wrapper passes an untrusted customer string straight through" framing in the
+> original writeup below is real and worth keeping as context, but it describes a vulnerability in that
+> hypothetical wrapper's own input handling, not in WP-CLI — the same reasoning that makes `sprintf()`
+> not vulnerable to SQL injection just because a careless caller can misuse it. **Net assessment: likely
+> Informative/N/A if submitted as-is, not merely severity-capped.** Kept in full below as an accurate,
+> real technical finding and to document why the reachability argument doesn't hold up — not being
+> submitted, and hunting is continuing for something that crosses the actual stated trust boundary.
 
 **Target:** `wp-cli/wp-cli` (`php/utils.php`, function `mustache_render()`) plus every bundled command that
 calls it to generate a file on disk: confirmed concretely in `wp-cli/config-command` and

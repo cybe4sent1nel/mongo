@@ -33,9 +33,22 @@ command construction against argument injection) — reviewed in full below. Whe
 found, verified empirically with real PHP/Mustache/tar/ZipArchive/bash execution rather than asserted
 from source reading alone, matching the standard set on the WordPress side of this audit.
 
-## Round 1 — CONFIRMED, High-value: `Utils\mustache_render()` disables all escaping, systemically
+## Scope correction #1 — WP-CLI's own trust model: CLI arguments are not a privilege boundary
 
-**File:** `round1-CONFIRMED-mustache-render-template-injection-rce.md`
+WP-CLI's published security-reporting guidance states its threat model explicitly: running `wp` at all
+requires the ability to already execute code as that local user, so a report needs to show someone
+*outside* that trust boundary gaining something they couldn't otherwise get — "a remote attacker can
+convince a WP-CLI user to run a malicious command" is explicitly called out as social engineering, not a
+WP-CLI vulnerability. This directly affects how Round 1 below should be read — see the correction banner
+at the top of that file. Going forward, a candidate finding only counts as reportable here if the
+malicious value can be shown crossing that trust boundary through WP-CLI's *own* supported mechanism
+(e.g. a value read back from already-stored WordPress content by an already-running, already-privileged
+automated/cron invocation), not via a hypothesized external wrapper that itself failed to sanitize input
+before invoking a trusted local tool.
+
+## Round 1 — technically CONFIRMED, likely N/A under the trust model above: `Utils\mustache_render()` disables all escaping, systemically
+
+**File:** `round1-CONFIRMED-mustache-render-template-injection-rce.md` (see correction banner at its top)
 
 `WP_CLI\Utils\mustache_render()` (`php/utils.php`) configures its Mustache engine with an `escape`
 callback that is a pure identity function — no HTML escaping, no context-aware escaping, nothing. This
