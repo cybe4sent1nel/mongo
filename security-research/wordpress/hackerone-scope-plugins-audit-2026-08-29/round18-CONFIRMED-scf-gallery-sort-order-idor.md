@@ -2,6 +2,12 @@
 # per-attachment access check (IDOR / broken access control), dynamically
 # reproduced with a real cross-privilege HTTP request and a negative control
 
+> **STATUS CORRECTION (see README's "Scope correction #3"): this finding is real and correctly
+> root-caused, but it is self-rated Low severity below — existence + relative-ordering disclosure
+> only, no content/metadata. The standing bar for this audit is now Medium-and-above. This is NOT
+> a reportable finding under that bar and is not being submitted. Kept as-is for the historical
+> record of what was actually verified.**
+
 Follows up round 17's static-read finding on `ACF_Field_Gallery::ajax_get_sort_order()` — this
 round builds the fixture needed to reproduce it over real HTTP and confirms it.
 

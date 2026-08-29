@@ -197,8 +197,22 @@ identical request. This is real, reproducible Missing Authorization / IDOR (CWE-
 honestly as **Low severity**, since the only information disclosed is attachment-ID existence and
 relative sort ordering (no title, content, URL, or other metadata). See
 `round17-cbt-authz-dynamic-verify-scf-ajax-audit-sqlite-integration-injection-probe.md` and
-`round18-CONFIRMED-scf-gallery-sort-order-idor.md` for full detail. This is the audit's second
-confirmed, in-scope, reportable finding, alongside round 6.
+`round18-CONFIRMED-scf-gallery-sort-order-idor.md` for full detail.
+
+## Scope correction #3: Low severity is below the acceptance floor — Medium is the minimum (round 18)
+
+Standing instruction: **Low-severity findings are out of scope for submission; Medium is the
+minimum accepted severity going forward.** Round 18's gallery `ajax_get_sort_order` IDOR is real,
+reproducible, and correctly root-caused — that part of the write-up is accurate and stays as the
+historical record of what was actually verified — but it was explicitly self-rated Low severity in
+its own text (existence + relative-ordering disclosure only, no content/metadata), which puts it
+below this floor. Correcting the record: **round 18 is not a reportable finding under the current
+bar.** It does not get relabeled `CONFIRMED` away from being real — it's still a genuine bug — but
+it is not being submitted, and future passes over this audit should not count it as the second
+confirmed finding. Round 6 (SCF bidirectional-field broken access control) remains the audit's only
+finding that clears the bar. Hunting continues for fresh Medium/High/Critical findings only — RCE,
+SQLi, XSS, auth bypass, privilege escalation, and IDOR/broken access control with real impact beyond
+bare existence/ordering disclosure (still excluding DoS per scope correction #2).
 
 ## Honest summary
 
