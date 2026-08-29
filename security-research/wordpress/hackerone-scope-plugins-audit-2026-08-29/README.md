@@ -119,10 +119,12 @@ surface plugin of the four (custom field storage, admin UI, a REST API layer, an
   storage through this path.
 
 **Not exhaustively covered**, flagged honestly rather than silently skipped: `pro/` (Options Pages,
-Repeater/Flexible Content Pro extras), the full `src/AI/GEO/` schema-generation code (~/2500 lines,
-builds JSON-LD from post/field data — a plausible stored-XSS-in-structured-data surface if any
-field value reaches raw `<script type="application/ld+json">` output unescaped, not yet checked),
-and the WPML integration beyond the two `$wpdb->get_row()` calls already confirmed parameterized.
+Repeater/Flexible Content Pro extras), and the WPML integration beyond the two `$wpdb->get_row()`
+calls already confirmed parameterized.
+
+**Update (Round 23):** the `src/AI/GEO/` JSON-LD lead above has since been checked and closed — see
+below. It was a real, plausible vector in general, but the plugin's single output site already uses
+`JSON_HEX_TAG`, which is the correct defense.
 
 ## SQLite Database Integration — spot-checked the highest-risk component, no bug found, not exhaustive
 
@@ -158,6 +160,20 @@ this new (SQLite-as-a-WordPress-backend is a recent feature, materially less bat
 20-year-old wpdb/MySQL core code), warrants a dedicated follow-up pass over the less-common
 translation branches rather than a single grep sweep — that's the most promising unexplored lead
 of this round, not a closed one.
+
+**Update (Round 22):** followed up on exactly that lead with a dedicated pass over the
+string/identifier-quoting core specifically (still not the full 7942 lines — window
+functions/`JSON_*`/date-arithmetic branches remain the next follow-up). Found two genuine
+escaping-consistency bugs in the exact class hunted for — both already fixed by the maintainer in
+the past several weeks and confirmed present in the current `v3.0.1` release, so not live: (1)
+`_real_escape()` used `addslashes()` instead of MySQL-compatible escaping, which under
+`NO_BACKSLASH_ESCAPES` SQL mode would have let an escaped quote be mis-parsed as a real string
+terminator (classic escape-bypass injection shape) — fixed by rejecting that SQL mode outright and
+centralizing escaping in the driver's own connection; (2) quoted identifiers were unescaped using
+string-literal backslash rules instead of MySQL's actual "identifiers never treat backslash as an
+escape" rule — fixed as part of the same hardening pass that added `ANSI_QUOTES` support. See
+`round22-sqlite-integration-mysql-translator-deep-dive.md` for the full trace of both, including why
+each was a real bug and why no bypass remains in either fix.
 
 ## Scope correction #2: DoS/crash findings are explicitly excluded (rounds 11, 16)
 
