@@ -214,6 +214,37 @@ finding that clears the bar. Hunting continues for fresh Medium/High/Critical fi
 SQLi, XSS, auth bypass, privilege escalation, and IDOR/broken access control with real impact beyond
 bare existence/ordering disclosure (still excluding DoS per scope correction #2).
 
+## Round 19: candidate second finding — SCF nav-menu arbitrary-object ACF meta write (Medium)
+
+Read SCF's own recent security-hardening commit (`64a2287`, "Hardening and code-quality
+improvements across fields, REST, and abilities") for the same reason round 15/16 read
+`wordpress-develop`'s recent commits: a maintainer who just fixed several instances of one bug
+class is the strongest signal for where an unfixed sibling of that same class still lives. That
+commit added a capability + nonce check to `WC_Order.php`'s WooCommerce-order ACF save path;
+`includes/forms/form-nav-menu.php`'s `update_nav_menu_items()` has a structurally similar,
+**unfixed** version of the same bug: it iterates attacker-controlled keys of
+`$_POST['menu-item-acf']` and passes each straight to `acf_save_post()` with no per-target
+authorization check, gated only by a `'nav_menu'`-scoped nonce that has nothing to do with the
+object actually being written.
+
+Dynamically confirmed by firing the real `wp_update_nav_menu` hook with a realistic `'nav_menu'`
+nonce plus a smuggled `menu-item-acf` entry: successfully wrote an ACF field value onto **a
+different user's profile** and, separately, onto **an arbitrary post**, neither related to the nav
+menu being saved. A negative control confirmed the legitimate save path for that same user field
+(`form-user.php`, `acf_verify_nonce('user')`) correctly rejects the `'nav_menu'` nonce used in the
+attack — proving the gap is specific to `update_nav_menu_items()`, not "any nonce works everywhere."
+Per the code, the identical mechanism also reaches the `'woo_order_<id>'` pseudo-ID `WC_Order.php`
+just added its own dedicated guard for — a concrete bypass of a fix the vendor made deliberately,
+though not independently re-verified dynamically since WooCommerce isn't installed on this
+throwaway install.
+
+Rated **Medium**: real, reproducible Missing Authorization (CWE-862) with an arbitrary-write
+primitive (not just a read/existence leak like round 18), reachable by anyone holding
+`edit_theme_options` — Administrator-only by default, but a capability commonly delegated to
+non-Administrator "menu manager" roles in real deployments, for whom this is a genuine privilege
+escalation. Full detail, reasoning, and PoC in
+`round19-CONFIRMED-scf-navmenu-arbitrary-object-acf-meta-write.md`.
+
 ## Honest summary
 
 No new SQLi/RCE/stored-XSS vulnerability confirmed in any of the four in-scope plugins this round.
