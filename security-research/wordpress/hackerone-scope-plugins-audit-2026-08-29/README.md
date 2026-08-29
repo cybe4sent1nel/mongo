@@ -338,3 +338,23 @@ WordPress.org with their own security review history, which is consistent with n
 win on a first pass; the honest next step is following the two named leads (SCF's GEO/JSON-LD
 output, and the SQLite translator's less-common branches) rather than re-sweeping what's already
 been checked.
+
+## Round 25 — sibling hunt off disclosed HackerOne #3931771 (stored XSS via unescaped sub-size
+## filename), the second half of the pair started in Round 20
+
+**File:** `round25-hackerone-3931771-xss-sibling-hunt-negative.md`
+
+The discloser of #3931771 explicitly asked that it be read together with #3931777 (Round 20's
+subject): same unsanitized `finalize_item()` write, two different sinks. Confirmed the write-side
+fix (`validate_sub_size_provenance()`, r63200, the exact same commit Round 20 already traced) also
+closes this chain — the reported payload can no longer pass the provenance allowlist. Separately
+confirmed, by direct code reading, that the *output*-side defect the discloser flagged as
+independently pre-existing and needing its own fix (`wp-admin/includes/media.php`'s `get_media_item()`
+and `edit_form_image_editor()` both interpolate a sub-size URL into a quoted HTML attribute with
+zero escaping — `esc_url()` is missing from all three call sites) is still literally present,
+unpatched, in current trunk. It isn't live today only because no other write path into that value
+survives: re-verified every other core write site regenerates filenames through
+`sanitize_file_name()` (confirmed its strip list includes `'`, `"`, `<`, `>`), and none of the four
+in-scope plugins touch `_wp_attachment_metadata` with anything but a server-regenerated path. A real,
+named hardening gap for the record — the first place to check if any future core feature or plugin
+ever reopens a raw write to these fields — but not a live, reportable finding today.
