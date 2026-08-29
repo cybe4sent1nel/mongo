@@ -146,10 +146,28 @@ capability, the way core `post_content` does? Traced the full chain:
 
 No bypass found.
 
+## Secure Custom Fields: `pro/` — mostly stub files; the one real file is safe by construction
+
+`pro/` turned out to be almost entirely 2-line stub/include files (the actual Options-Pages/
+Repeater/Flexible-Content logic already lives in `includes/`, already covered above) — Pro
+features were merged into the free WordPress.org fork, and `pro/` is what's left of the old
+directory split. The one file with real content,
+`pro/blocks-auto-inline-editing.php` (262 lines, lets a user click directly into a rendered SCF
+block preview and edit a field's value inline), is worth a specific mention because it looked
+promising at a glance: it parses a block's *already-rendered HTML output* with `DOMDocument`, then
+rewrites matched text nodes and sets several `data-acf-*` attributes from field data
+(`$element->nodeValue = $field_value`, `$element->setAttribute( 'data-acf-placeholder',
+$field_placeholder_text )`, etc.) — a raw-HTML-rewrite-from-field-data pattern is exactly the shape
+that's usually worth checking for injection. It's safe by construction, though:
+`DOMNode::nodeValue` and `DOMElement::setAttribute()` both treat their argument as plain text/
+attribute-value content and entity-encode `<`, `>`, `&`, and quotes when the document is later
+serialized via `saveHTML()` — there's no way to reach these two DOM APIs with a string and have it
+produce new markup, unlike raw string concatenation into an HTML template. Confirmed this is the
+mechanism actually used throughout (no `$html .= $field_value`-style concatenation anywhere in the
+file) before ruling it out.
+
 ## What's still not covered (honest, specific, not a blanket disclaimer)
 
-- **SCF `pro/` directory** (Options Pages, and the Pro-only extras to Repeater/Flexible Content) —
-  128K of source, not opened at all yet.
 - **SCF's GEO/JSON-LD front-end output was checked in round 1 and confirmed safe** (`JSON_HEX_TAG`
   on `wp_json_encode()` blocks `</script>` breakout regardless of field content) — not re-opened
   this round.
