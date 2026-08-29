@@ -286,6 +286,31 @@ and is explicitly versioned as a prior hardening pass (`@since SCF 6.9.3`). No f
 exploitable sibling found — reported as a genuine negative result after a wide search, not narrowed to
 look for confirmation.
 
+## Round 21 — adversarial re-read of the #3931777 fix itself, plus a wider sweep of every other
+## media-editing code path — one genuine logic quirk found and fully traced, still no reportable finding
+
+**File:** `round21-finalize-item-basename-collapse-and-wider-sweep-negative.md`
+
+Directed to dig deeper and widen scope rather than re-check Round 20's ground. This round assumed the
+fix itself might have a gap and adversarially re-read `validate_sub_size_provenance()`/
+`get_sideloaded_file_names()`: confirmed the strict `in_array(..., true)` allowlist check cannot be
+bypassed with a `../`-laden string, since every allowlist entry is itself a value WordPress already
+generated. Found one genuine, previously-undocumented quirk in the process: `finalize_item()`'s
+`'original'`/`'scaled'` branch can legitimately set the top-level `_wp_attachment_metadata['file']` to a
+bare basename (no subdirectory) because the allowlist includes basename-only forms — traced this all the
+way through `wp_delete_attachment_files()`'s fragile `backup_sizes` branch and confirmed it only ever
+*widens* the confinement directory to the uploads base folder (never escapes it), and that the only other
+input to that branch (`_wp_attachment_backup_sizes`) is never written by `finalize_item()` at all — it
+remains independently safe per Round 20. Also read end-to-end (not just grepped) three areas Round 20
+didn't individually walk through: the REST-native `edit_media_item()` crop/rotate/flip endpoint (safe —
+always writes brand-new, server-named files), all three `wp-admin/includes/image-edit.php` AJAX functions
+(`wp_save_image()`, `wp_restore_image()`, `stream_preview_image()` — all safe, confirmed no request field
+reaches a `_wp_attachment_backup_sizes` file value), and Create Block Theme's font/media/zip
+download-and-write pipeline (already comprehensively hardened by a single upstream commit covering all
+three files together, and gated behind `edit_theme_options`/`edit_themes` throughout, which WordPress's
+own model already treats as code-execution-equivalent trust). No fresh Medium+ finding — reported
+honestly, with the one real quirk documented for the record rather than omitted or oversold.
+
 ## Honest summary
 
 No new SQLi/RCE/stored-XSS vulnerability confirmed in any of the four in-scope plugins this round.
