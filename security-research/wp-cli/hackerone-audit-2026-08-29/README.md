@@ -82,6 +82,28 @@ visibility into any one specific such wrapper and isn't claiming one; what's con
 speculatively demonstrated is that the WP-CLI-side primitive itself grants unrestricted OS command
 execution the moment an untrusted string reaches one of these parameters, with no other precondition.
 
+## Round 2 — CONFIRMED, and actually crosses the trust boundary: table-format output doesn't neutralize ANSI/OSC terminal escape sequences
+
+**File:** `round2-CONFIRMED-table-format-ansi-osc-terminal-injection.md`
+
+Unlike Round 1, this one is planted by content, not by an operator's own keystrokes, which is exactly
+what the trust-model correction above requires. `Formatter::show_table()` (the code behind every
+command's default `--format=table` output) and the underlying `cli\Table` class (`wp-cli/php-cli-tools`)
+write every cell value to `STDOUT` completely unfiltered — no stripping or escaping of ASCII control
+bytes or ANSI/OSC terminal escape sequences, in clear contrast to `Utils\write_csv()`'s existing
+`escape_csv_value()` protection against CSV/formula injection for the `csv` format. Checked WordPress
+core's own sanitization directly against source rather than assuming: `comment_author` (settable by a
+**fully anonymous** visitor via any public comment form, sanitized only with `strip_tags()`) and
+`display_name` (settable by **any authenticated user, down to Subscriber**, sanitized with
+`sanitize_text_field()`, which strips `<`, whitespace runs, and percent-encoded triplets but not raw
+control bytes) both survive a raw ESC (0x1B) / BEL (0x07) byte string untouched, and both are **default**
+output columns for `wp comment list` / `wp user list`. Built a real `cli\Table` output using the actual
+`wp-cli/php-cli-tools` package with an OSC 52 (clipboard-write) + OSC 0 (title-spoof) payload and captured
+the raw bytes to confirm they pass through completely unmodified. Scored honestly at Medium (4.3): the
+directly-demonstrated impact is clipboard/terminal-state corruption; the further "operator pastes the
+clipboard into a shell and it executes" chain is a real, documented consequence of OSC 52 abuse elsewhere
+but requires a separate victim action this PoC didn't attempt to claim as automatic.
+
 ## Areas reviewed and found sound (no bypass/vulnerability found — reported honestly, not omitted)
 
 - **`Runner.php` SSH/Docker/Vagrant remote-command construction** (`--ssh=`, aliases, `ssh-args`,
