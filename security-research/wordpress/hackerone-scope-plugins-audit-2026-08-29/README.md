@@ -258,6 +258,34 @@ No companion confidentiality-read primitive exists in this code path (write-only
 returned to the requester), and no security-boundary/scope change occurs. Reporting the Medium
 rating as the ceiling actually demonstrated, not a starting point to argue up from.
 
+## Round 20 — sibling hunt off disclosed HackerOne #3931777, honest negative result
+
+**File:** `round20-hackerone-3931777-sibling-hunt-negative.md`
+
+Prompted by the public disclosure of #3931777 (arbitrary file deletion via `POST /wp/v2/media/<id>/finalize`
+poisoning `_wp_attachment_metadata`, fixed for WordPress 7.1). Used that report's exact bug shape — a
+path-confinement check whose boundary is derived from the same attacker-controlled value it's meant to
+constrain — as a search pattern against freshly-pulled `WordPress/wordpress-develop` and
+`WordPress/gutenberg` trunk, plus every file-deletion call site in all four in-scope plugins.
+
+Found that `wp_delete_attachment_files()`'s vulnerable `$backup_sizes` branch is **unchanged** on trunk —
+WordPress fixed this by closing the only entry point (`finalize_item()` now validates every submitted
+filename against a provenance allowlist of names the server itself actually produced) rather than
+hardening the sink itself, which is worth flagging as a standing hardening recommendation but is not a
+live bug: traced every other write-site of the two vulnerable meta keys in current core (XML-RPC,
+Customizer, custom-header/background, site-icon) and confirmed each regenerates metadata from a real,
+server-controlled file rather than accepting a client string. Checked every `unlink()`/`wp_delete_file()`
+call in all four in-scope plugins individually, tracing each target path back to its data source rather
+than pattern-matching superficially — Classic Editor and SQLite Database Integration have no
+file-deletion code at all; Create Block Theme's candidates all either delete WordPress's own temp files,
+a hardcoded-literal screenshot filename, or apply `basename()` before concatenation (which structurally
+prevents escaping the target directory regardless of input, unlike the disclosed bug's broken
+after-the-fact containment check); Secure Custom Fields's file-deletion path already uses the *correct*
+pattern (an independently-built directory allowlist, not a boundary derived from the file being deleted)
+and is explicitly versioned as a prior hardening pass (`@since SCF 6.9.3`). No fresh, currently-
+exploitable sibling found — reported as a genuine negative result after a wide search, not narrowed to
+look for confirmation.
+
 ## Honest summary
 
 No new SQLi/RCE/stored-XSS vulnerability confirmed in any of the four in-scope plugins this round.
