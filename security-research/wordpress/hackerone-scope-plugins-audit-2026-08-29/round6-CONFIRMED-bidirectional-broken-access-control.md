@@ -175,3 +175,38 @@ Filed under Secure Custom Fields, one of this program's four in-scope plugins. V
 against `99cd25279b` (the current `trunk`/6.9.5 HEAD as cloned this session) — this is not
 a historical/already-patched issue; the 6.9.5 release that shipped the partial fix is the
 version this was found live in.
+
+## Addendum: checked whether the 6.9.3 "read permission" fix has the same REST-only gap — it doesn't
+
+While looking for a second instance of the same pattern (a changelog-documented fix that
+turns out to be narrower than it reads), re-checked the `6.9.3` entry: "Excluded posts the
+current user cannot read from Post Object, Page Link, and Relationship field queries."
+
+Initial read of `acf_get_grouped_posts()` looked like it only restricted unauthenticated
+(`! is_user_logged_in()`) queries — which would have been the same shape of gap again.
+That was an incomplete read: the function has a **second**, unconditional filter later in
+the same loop —
+
+```php
+if ( $enforce_read_permissions ) {
+    $this_posts = array_filter(
+        $this_posts,
+        function ( $post ) {
+            return is_post_publicly_viewable( $post ) || current_user_can( 'read_post', $post->ID );
+        }
+    );
+}
+```
+
+— applied regardless of login state whenever the caller passes `$enforce_read_permissions
+= true`, which `relationship`, `post_object`, and `page_link`'s `get_ajax_query()` methods
+all do. This one genuinely covers authenticated low-privileged users too. Confirmed not a
+second instance of the same gap.
+
+This does not weaken the main finding above: this filter governs what the *search UI*
+surfaces, not what post IDs the *save* will accept — `validate_value()`/`update_value()`
+never re-check selectability against the submitted IDs, and the reproduction's target post
+was `publish`-status (publicly viewable) regardless, so this filter was never in the path
+of the demonstrated attack. Recorded here because a rigorous check that comes back negative
+is still worth keeping on the record, especially right after finding a positive one in the
+same file family.
