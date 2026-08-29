@@ -149,6 +149,40 @@ reading, though:
    user's profile, any taxonomy term, any comment, any widget, any WooCommerce order, and the
    site's global ACF options** that they otherwise have no edit rights to at all.
 
+### Severity ceiling check: does not reach High (verified, not assumed)
+
+Checked explicitly whether this could be argued past Medium into High (CVSS 3.1 High band is
+7.0–8.9; this sits at `AV:N/AC:L/PR:H/UI:N/S:U/C:N/I:H/A:N` ≈ **4.9**) by attacking the three
+things that would actually move the score, rather than reaching for the `woo_order_<id>` angle or
+the "admin-only by default" framing as if either changed the arithmetic (they don't: `I:H` is
+already the ceiling for the Integrity metric — the write already reaches every ACF pseudo-ID target,
+so "and orders too" doesn't push it further; and `PR` is unaffected by *which* object the write
+lands on, only by *what's needed to trigger it at all*):
+
+- **Can `PR` drop below High?** Traced every real caller of `wp_update_nav_menu_object()` (the
+  function backing the `wp_update_nav_menu` action this bug hooks) in WordPress Core:
+  `wp-admin/nav-menus.php` (explicit `current_user_can('edit_theme_options')`), the REST API's
+  `WP_REST_Menus_Controller` (inherits `WP_REST_Terms_Controller::update_item_permissions_check()`,
+  which checks `current_user_can('edit_term', ...)` — and the `nav_menu` taxonomy hardcodes
+  `edit_terms`/`manage_terms`/`assign_terms`/`delete_terms` all to `'edit_theme_options'` at
+  registration, `wp-includes/taxonomy.php:124-129`, not filterable by a lower-privilege site
+  config), and the Customizer's `WP_Customize_Nav_Menu_Setting` (gated by the `'customize'` meta
+  capability, which `map_meta_cap()` maps unconditionally to `edit_theme_options`,
+  `wp-includes/capabilities.php:698-700`). All three independent paths land on the same capability.
+  No fourth path exists in Core. **`PR:H` stands.**
+- **Is there a companion confidentiality-read primitive (`C:N` → `C:H`)?** No — this is a write-only
+  sink (`update_nav_menu_items()` → `acf_save_post()`) with no response body that returns target
+  data to the requester. Nothing in this code path discloses the value it wrote or any other data
+  about the target object.
+- **Is there a scope change?** No — the write still lands inside the same WordPress install's own
+  postmeta/usermeta/termmeta via `acf_save_post()`; no different security authority is crossed.
+
+None of the three moved. Reporting this as capped at Medium (~4.9) on the evidence actually
+demonstrated, not reaching for `woo_order_<id>` reachability or the admin-only reachability angle
+as if either were score-moving — they aren't. Those two points remain valid *context* for why this
+is worth fixing (a deliberate, recent guard has a second, open door; the capability gating it is
+commonly delegated in real deployments) without inflating the number.
+
 Rating this **Medium** on that basis: real, dynamically-confirmed Missing Authorization with a
 concrete arbitrary-write primitive and a demonstrated bypass of an intentional, recently-added
 guard on a sensitive object type, whose practical blast radius depends on `edit_theme_options`

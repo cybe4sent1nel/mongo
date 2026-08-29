@@ -245,6 +245,19 @@ non-Administrator "menu manager" roles in real deployments, for whom this is a g
 escalation. Full detail, reasoning, and PoC in
 `round19-CONFIRMED-scf-navmenu-arbitrary-object-acf-meta-write.md`.
 
+**Severity ceiling checked explicitly, not assumed**: verified this cannot be argued to High
+(`AV:N/AC:L/PR:H/UI:N/S:U/C:N/I:H/A:N` ≈ 4.9) by attacking the three things that would actually move
+the CVSS score — not the `woo_order_<id>` reachability or "admin-only by default" framing, which
+don't move the arithmetic either way. Traced every real WordPress Core caller of the
+`wp_update_nav_menu` action (classic `nav-menus.php`, the REST `WP_REST_Menus_Controller`, and the
+Customizer's `WP_Customize_Nav_Menu_Setting`); all three independently require `edit_theme_options`
+— the `nav_menu` taxonomy hardcodes it at registration (`wp-includes/taxonomy.php:124-129`) and the
+Customizer's `'customize'` meta capability maps to it unconditionally
+(`wp-includes/capabilities.php:698-700`) — so `PR` cannot drop below High through any Core path.
+No companion confidentiality-read primitive exists in this code path (write-only sink, no data
+returned to the requester), and no security-boundary/scope change occurs. Reporting the Medium
+rating as the ceiling actually demonstrated, not a starting point to argue up from.
+
 ## Honest summary
 
 No new SQLi/RCE/stored-XSS vulnerability confirmed in any of the four in-scope plugins this round.
