@@ -2,6 +2,18 @@
 # essentially the entire authenticated XML-RPC content-editing surface, plus a
 # confirmed database-pollution side effect via `wp.newPost`
 
+> **STATUS CORRECTION (see README's "Scope correction #2"): this is a DoS/crash finding.
+> The program's own exclusion list rules out "Brute force, DoS, memory exhaustion,
+> phishing, text injection, or social engineering attacks" outright, and this write-up
+> classifies itself as an authenticated Denial of Service throughout — so it is Not
+> Applicable / Informative, not a reportable finding, regardless of the breadth (8
+> methods) or the auto-draft side effect. That side effect is created by the same
+> `get_default_post_to_edit()` call every ordinary "Add New Post" admin action already
+> triggers, and unbounded row growth is the disk-flavored sibling of the explicitly-
+> excluded "memory exhaustion" category — it does not lift this out of the excluded
+> bucket. Kept as-is for the historical record of what was actually verified; not being
+> submitted, and not a confirmed in-scope bug.**
+
 **This is a real, fresh, empirically-confirmed bug in WordPress Core's current
 `wordpress-develop` trunk, live-tested via HTTP against the same throwaway WP install
 used throughout this audit.** Same underlying bug *class* as round 11 (CWE-248 Uncaught

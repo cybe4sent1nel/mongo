@@ -1,6 +1,14 @@
 # Round 11: CONFIRMED, fresh — unauthenticated PHP Fatal Error via REST API argument
 # type confusion, found by fuzzing rather than pattern-matching a known CVE
 
+> **STATUS CORRECTION (see README's "Scope correction #2"): this is a DoS/crash finding.
+> The program's own exclusion list rules out "Brute force, DoS, memory exhaustion,
+> phishing, text injection, or social engineering attacks" outright. This write-up
+> classifies itself as a Denial of Service throughout — meaning it is Not Applicable /
+> Informative, not a reportable finding, regardless of the technical detail below.
+> Kept as-is for the historical record of what was actually verified; not being
+> submitted, and not a confirmed in-scope bug.**
+
 **This round switched method, per direct instruction, from manual code reading to actual
 fuzzing against a live WordPress 7.1 install** (the same throwaway install used throughout this
 audit), informed by the wp2shell/XSS2Shell case studies (rounds 9-10) but not a rediscovery of

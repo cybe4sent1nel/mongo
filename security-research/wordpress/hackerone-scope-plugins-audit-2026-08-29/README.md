@@ -159,6 +159,28 @@ this new (SQLite-as-a-WordPress-backend is a recent feature, materially less bat
 translation branches rather than a single grep sweep — that's the most promising unexplored lead
 of this round, not a closed one.
 
+## Scope correction #2: DoS/crash findings are explicitly excluded (rounds 11, 16)
+
+The program's own exclusion list (scope doc 9) is explicit: **"Brute force, DoS, memory
+exhaustion, phishing, text injection, or social engineering attacks"** are out of scope, full
+stop. Rounds 11 and 16 (`round11-CONFIRMED-...` and `round16-CONFIRMED-...`) each document a
+real, reproducible, single-request PHP crash (uncaught `TypeError`, CWE-248/CWE-20) in WordPress
+Core's REST API and XML-RPC server respectively. Both write-ups classify the finding as a Denial
+of Service in their own text — which means both fall squarely inside the exclusion, regardless of
+how many methods/routes are affected, how the crash was found, or what side effects were traced
+(round 16's auto-draft database-row side effect included — that row is created by the exact same
+`get_default_post_to_edit()` call every ordinary "Add New Post" admin action already triggers, so
+it's the same normal side effect landing before an excluded crash, not a distinct pollution
+primitive, and unbounded row growth reads as the disk-flavored sibling of the explicitly-excluded
+"memory exhaustion" category either way). Leaving their `CONFIRMED` filenames as-is for the
+historical record of what was actually found and verified, but the correct status for both is
+**Not Applicable / Informative, not a reportable finding** — flagging this plainly rather than
+letting a future pass over this audit mistake either for a submittable bug. Going forward, this
+audit does not pursue crash/DoS findings as an end goal, regardless of breadth or novelty; only
+RCE, SQLi, XSS, auth bypass, privilege escalation, IDOR/broken access control, and SSRF-with-real-
+impact are being hunted from here on. Round 6 (SCF bidirectional-field broken access control)
+remains the audit's one confirmed, in-scope, reportable finding.
+
 ## Honest summary
 
 No new SQLi/RCE/stored-XSS vulnerability confirmed in any of the four in-scope plugins this round.
