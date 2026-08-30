@@ -358,3 +358,25 @@ survives: re-verified every other core write site regenerates filenames through
 in-scope plugins touch `_wp_attachment_metadata` with anything but a server-regenerated path. A real,
 named hardening gap for the record — the first place to check if any future core feature or plugin
 ever reopens a raw write to these fields — but not a live, reportable finding today.
+
+## Round 26 — WordPress 7.1's genuinely new code, plus a sibling hunt off the disclosed 7.1-beta
+## "wp2shell" pre-auth RCE chain (CVE-2026-63030 / CVE-2026-60137)
+
+**File:** `round26-wp71-beta-new-code-and-wp2shell-sibling-hunt.md`
+
+Two angles against a fresh `7.1.0` checkout diffed against `7.0.4`. (1) Read every genuinely new PHP
+file 7.1 introduces (`class-wp-rest-view-config-controller.php`, `class-wp-rest-icon-collections-controller.php`,
+the new `playlist`/`playlist-track`/`tabs`/`tab-list`/`tab-panel` blocks, `json-schema.php`) —
+all consistently and correctly escaped, notably via `WP_HTML_Tag_Processor::set_attribute()` for
+every directive attribute rather than raw concatenation. Found one fragile-but-inert pattern in the
+new `wp_get_tooltip_helper()` (a caller-supplied HTML fragment concatenated into an `sprintf()`
+*format string* rather than passed as an argument), traced fully, and confirmed it can't produce
+unescaped output even in the worst case — every value that could land anywhere is pre-escaped.
+(2) Used the publicly-disclosed "wp2shell" chain — a 7.1-*beta*-only REST batch-route confusion
+(CVE-2026-63030) combined with a `WP_Query` `author__not_in` SQL injection (CVE-2026-60137), fixed
+in beta2 — as a search pattern: read the exact fix commits, then systematically checked every
+`__in`/`__not_in`-style parameter across `WP_Query`, `WP_User_Query`, `WP_Term_Query`, and
+`WP_Comment_Query` for the same "sanitize only inside `is_array()`, cast-and-implode raw otherwise"
+anti-pattern. None reproduce it — everywhere else already applies sanitization unconditionally.
+Also confirmed the REST batch-dispatch fix (`serve_batch_request_v1()` now explicitly validates and
+sanitizes each sub-request before dispatch) is complete on current trunk. No fresh Medium+ finding.
