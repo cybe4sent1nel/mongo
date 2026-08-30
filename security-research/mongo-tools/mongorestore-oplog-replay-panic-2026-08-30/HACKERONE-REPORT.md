@@ -12,6 +12,27 @@ There is no `recover()` anywhere in `mongorestore`'s call chain (checked `mongor
 
 CWE-248 (Uncaught Exception) / CWE-843 (Type Confusion) — an externally-supplied value's runtime type is asserted without verification, causing a process-terminating panic instead of a handled parse error.
 
+## Authentication Required
+
+**None, to the target `mongod`.** This is a client-side tool crash, not a network-listener
+vulnerability, so "pre-auth" framing doesn't map onto it directly — but concretely: the PoC
+below was run against a target `mongod` started with no `--auth` flag (the unauthenticated
+default), and the crash occurred immediately, before `mongorestore` sends any command that would
+require credentials. Tracing the code confirms why: for both `commitIndexBuild` and
+`createIndexes`, the vulnerable extraction runs, and the panic fires, entirely from local parsing
+of the oplog file — the handler `return`s immediately afterward
+([`oplog.go#L296-L322`](https://github.com/mongodb/mongo-tools/blob/21a342dfee6468ad9350d156d25086da64dd03b1/mongorestore/oplog.go#L296-L322))
+without ever reaching `restore.ApplyOp()` (the function that actually sends a command to the
+server) for these two entry types. `mongorestore` does need to reach the point of having *some*
+session object for the target server before the oplog-replay loop begins
+([`oplog.go#L125-L128`](https://github.com/mongodb/mongo-tools/blob/21a342dfee6468ad9350d156d25086da64dd03b1/mongorestore/oplog.go#L125-L128)),
+but that is connectivity, not authentication — it succeeds with zero credentials against an
+unauthenticated deployment, which is `mongod`'s out-of-the-box default.
+
+The actual precondition for this bug is not an authentication boundary at all: it's a **file/
+supply-chain trust boundary** — getting one crafted, 75-byte oplog entry into a dump or archive
+that a victim later restores with `--oplogReplay`.
+
 ## Component / Version
 
 - Repository: `mongodb/mongo-tools` (HackerOne scope: **Database Tools**)
