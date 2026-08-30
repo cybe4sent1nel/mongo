@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+<title>before</title>
+<style id="core-block-supports-inline-css">
+.wp-elements-abc123 a:where(:not(.wp-element-button)) {
+	color: var('(') }body{background:url(https://evil.example/exfil.png)}y{color:red);
+}
+</style>
+</head>
+<body>
+<a href="#">link</a>
+<script>
+window.addEventListener('load', function () {
+  var bg = getComputedStyle(document.body).backgroundImage;
+  document.title = 'BODY-BG=' + bg;
+});
+</script>
+</body>
+</html>

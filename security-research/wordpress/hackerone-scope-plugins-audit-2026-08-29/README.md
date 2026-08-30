@@ -380,3 +380,30 @@ in beta2 — as a search pattern: read the exact fix commits, then systematicall
 anti-pattern. None reproduce it — everywhere else already applies sanitization unconditionally.
 Also confirmed the REST batch-dispatch fix (`serve_batch_request_v1()` now explicitly validates and
 sanitizes each sub-request before dispatch) is complete on current trunk. No fresh Medium+ finding.
+
+## Round 27 — CONFIRMED, browser-verified: `safecss_filter_attr()` CSS-rule-injection via any
+## block's color/style value, live in the current stable release (5.8.0 onward)
+
+**File:** `round27-CONFIRMED-safecss-filter-attr-css-rule-injection.md` · PoC: `tooling/safecss-poc/`
+
+**This is the finding worth reading first.** Investigating trunk's `996c6d6864` ("Allow
+functional CSS values in inline styles") surfaced a real, pre-existing architectural defect in
+`safecss_filter_attr()` — core's canonical `style="..."` sanitizer, used for every user without
+`unfiltered_html`. The function validates a *copy* of the CSS with "safe" functions
+(`var()`/`calc()`/etc.) stripped out, but returns the *original, unmodified* string. Since PHP's
+paren-balancer is quote-unaware while real CSS parsers aren't, a quoted-string trick inside a
+safe function's arguments makes PHP believe dangerous characters (`}`, `&`, `=`, `\`) are still
+safely nested when a real browser has already closed that function — letting a value that closes
+the surrounding CSS rule and opens a brand-new, fully attacker-controlled one pass straight
+through. Verified three ways: the actual `safecss_filter_attr()` returns the payload unchanged;
+the actual `WP_Style_Engine_CSS_Declarations`/`WP_Style_Engine_CSS_Rule` classes produce the
+literal `<style>` tag WordPress would print; and loading that exact markup in a real headless
+Chromium confirms the injected rule takes effect (`document.body`'s computed background-image
+becomes the attacker's URL). Reachable by any Author (or a Contributor whose draft gets
+previewed) with no `unfiltered_html`, via an ordinary block's `style.elements.*.color` attribute
+— confirmed `wp_kses_post()` never sanitizes inside HTML/block comments, so the payload survives
+save untouched. **Confirmed to predate the 7.1/7.2 commit entirely — the `var()` variant alone
+reproduces it, and `var()` support dates to WordPress 5.8.0, meaning this is live in the current
+stable 7.1.0 release**, not just trunk. Scored transparently as CVSS 5.7–6.8 (Medium) depending
+on the Scope judgment call, honestly bounded to the demonstrated defacement/external-fetch impact
+without claiming an undemonstrated data-exfiltration chain.
