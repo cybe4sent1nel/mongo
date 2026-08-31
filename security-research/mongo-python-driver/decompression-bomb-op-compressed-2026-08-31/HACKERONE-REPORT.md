@@ -136,6 +136,29 @@ amplification: 1029x the bytes actually sent on the wire
 
 The client's memory visibly balloons by over a gigabyte, and the operation fails outright, from a single ~1.9 MB reply to a `ping`.
 
+## Reproduced against a real, unmodified `mongod 8.3.8` binary (not just a mock server)
+
+Everything above was first confirmed against a minimal hand-rolled mock server, to keep the reproduction simple. To rule out any doubt that this depends on some quirk of that mock implementation, I re-ran the attack with a real, unmodified `mongod` binary (`db version v8.3.8`, `gitVersion 35e8c8a57f78157ed9fac1a9e90ee6c1818adab6`) doing 100% of the legitimate protocol work, fronted by a transparent MITM proxy (`mitm_proxy.py`, included in this directory) that relays every byte untouched in both directions **except** for one substituted reply — modeling exactly the "compromised server / on-path attacker without TLS" threat model this report describes.
+
+Setup: real `mongod 8.3.8` started with `--networkMessageCompressors zlib`; `pymongo` connects through the proxy instead of directly. The proxy log shows the real handshake (`OP_QUERY`/`OP_REPLY`, genuine `mongod` bytes) passing through untouched on all three connections `pymongo` opens (pool + monitor), the client's real compressed `ping` command (`op_code=2012`) reaching the real server untouched, and the real server's genuine (tiny, 47-byte) compressed reply being intercepted and replaced:
+
+```
+[proxy#3] client->server op_code=2012 len=95: relaying untouched
+[proxy#3] server->client (REAL reply, len=47, op_code=2012) intercepted -- discarding it
+[proxy] *** SUBSTITUTING real reply with OP_COMPRESSED bomb *** wire_bytes=1943944 claimed_uncompressed=2000000000 (compressed_payload=1943919 bytes, ratio 1029:1)
+[proxy#3] bomb delivered on this connection; closing
+```
+
+Client-side (real, unmodified `pymongo` 4.17.0 code, `MemoryError` fired by the driver's own decompression call once the process's virtual-memory cap — set purely so the demo fails safely rather than consuming the test host's RAM — was hit):
+
+```
+[client] issuing ping command against REAL mongod 8.3.8 (via MITM proxy)...
+[client] EXCEPTION after ~5.84s: MemoryError: Unable to allocate output buffer.
+[client] peak RSS observed: 1.07 GiB (1126520 KB)
+```
+
+Same result as the mock-server test: a genuine mongod's entire handshake and command flow, with exactly one reply swapped out by an on-path attacker, is enough to force gigabyte-scale allocation and crash the client. `mitm_proxy.py` and `victim_client_real.py` (both included) reproduce this end to end against any real `mongod`/`mongos` binary.
+
 ## Impact
 
 Any `pymongo` application connecting to a server it does not fully trust — a malicious or compromised cluster member, a proxy, a poisoned DNS/SRV record, or an on-path attacker when TLS is not enforced/verified — with wire compression enabled can be forced to allocate up to ~2 GiB of memory from a single ~1.9 MB reply to **any** ordinary operation (a `ping`, a `find`, a `hello` refresh, anything that gets a reply). Nothing prevents the same malicious server from repeating this on every subsequent reply, on every connection in the pool, compounding the effect well beyond a single 2 GiB spike. Depending on the host's available memory this results in the Python process being OOM-killed, the host's memory becoming exhausted for other co-located processes, or the client hanging for many seconds fully occupying a CPU core just materializing (and then discarding) data it never asked for. This is a real, currently-unpatched (in the latest tag) resource-exhaustion vulnerability in official, widely-deployed driver code, and it stands in clear contrast to the correct, already-shipped defense in MongoDB's own C driver against exactly this attack.
@@ -149,4 +172,5 @@ In `pymongo/network_layer.py`, stop discarding the `uncompressedSize` field from
 - Discarded `uncompressedSize` field: https://github.com/mongodb/mongo-python-driver/blob/f2103a95870ab5c00b436f757cbaeb86a1047679/pymongo/network_layer.py#L658-L661 and https://github.com/mongodb/mongo-python-driver/blob/f2103a95870ab5c00b436f757cbaeb86a1047679/pymongo/network_layer.py#L775
 - Unbounded one-shot decompression: https://github.com/mongodb/mongo-python-driver/blob/f2103a95870ab5c00b436f757cbaeb86a1047679/pymongo/compression_support.py#L166-L187
 - Correct comparison behavior in mongo-c-driver (already shipped, not a suggestion for this report — cited only to show the fix is already known-good practice within MongoDB's own drivers): `mcd_rpc_message_decompress()` in `mongoc-cluster.c`, tag `2.5.1`
-- `evil_server.py`, `victim_client.py`, `bomb_2gb.zlib` (included in this directory) — full working end-to-end PoC
+- `evil_server.py`, `victim_client.py`, `bomb_2gb.zlib` (included in this directory) — minimal mock-server PoC
+- `mitm_proxy.py`, `victim_client_real.py` (included in this directory) — PoC against a real, unmodified `mongod 8.3.8` binary, fronted by a transparent proxy that substitutes exactly one reply
