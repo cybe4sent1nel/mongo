@@ -105,3 +105,34 @@ Concretely, the places still worth attacking for a write:
    proves the class is live.
 3. **`revalidateTag` / `revalidatePath` tag storage**, not yet traced end to end.
 4. Multipart/temp-file handling for Server Action file uploads.
+
+## CORRECTION (traced end-to-end): the evalManifest chain is NOT a true RCE
+
+An earlier version of this document floated "arbitrary write into `.next/` → `evalManifest`"
+as the most credible remaining RCE lead. Tracing it fully, it does not hold. Recording the
+correction so the wrong claim is not left standing.
+
+`evalManifest()` / `runInNewContext()` runs on exactly **one** file class
+(`load-components.ts:162`, `route-module.ts:352`):
+
+```
+.next/server/app/<page>_client-reference-manifest.js
+```
+
+* Those files are **build artifacts**, emitted only at build time by webpack plugins
+  (`build/webpack/plugins/flight-manifest-plugin.ts:606`,
+  `build/webpack/plugins/middleware-plugin.ts:127`). No runtime code path writes or overwrites
+  them; at runtime they are read-only.
+* The runtime `FileSystemCache` writes only `.body` / `.html` / `.rsc` / `.meta` / `.segments`
+  files (`file-system-cache.ts:370-445`), under the 16.3.3 `startsWith(rootDir + path.sep)`
+  containment check. It cannot emit a `.js` file, and cannot escape the app cache dir.
+
+So there is **no request-reachable write primitive** that lands attacker-controlled JavaScript
+into the file class `evalManifest` reads. Bridging it would require a custom `cacheHandler` that
+writes attacker bytes verbatim, with a `.js` extension, into `.next/server/app/`, named to match
+a route — behaviour no real handler exhibits (handlers persist opaque blobs to Redis or their own
+namespace). That is a bug in hypothetical application code, not in Next.js.
+
+**Conclusion:** the `evalManifest` sink is unguarded but unreachable from request input. It is a
+defense-in-depth note (a runtime assertion that the eval target path is a known build artifact
+would harden it), not an exploitable RCE. No RCE was found in next@16.3.4.
