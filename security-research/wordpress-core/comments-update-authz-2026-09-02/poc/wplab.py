@@ -4,7 +4,7 @@ import re
 import sys
 import requests
 
-BASE = "http://127.0.0.1:8371"
+BASE = "http://localhost:8371"
 
 CREDS = {
     "admin": "AdminPass123!",

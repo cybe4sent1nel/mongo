@@ -46,6 +46,8 @@ PHP 8.4.19 CLI server, MariaDB 10.11.14. Users: `admin`, `editor`, `author`, `co
 | `poc/poc_comment_update_authz.py` | narrated two-chain PoC |
 | `poc/t_notes.py` | notes read/write authorization matrix across all five roles |
 | `poc/t_notes2.py` | which update fields and which target posts are unchecked |
+| `poc/t_finalize.py` | provenance-allowlist attack against the 7.1 media finalize fix — **negative result** |
+| `poc/probe_rest.py` | all-routes × all-roles REST read probe |
 | `poc/comments-controller-7.0.4-to-7.1.diff` | the whole controller diff between the two versions (4 insertions, 6 deletions, all cosmetic) |
 | `poc/kses_batch.php`, `poc/kses_fuzz.py` | the kses differential fuzzer — **negative result** |
 | `poc/kses_fuzz_hits.json` | its 152 hits, all the same inert attribute-free `<object>` |
@@ -68,15 +70,35 @@ Recorded so the work is not repeated:
   `render_block_core_post_navigation_link()` (`wp-includes/blocks/post-navigation-link.php:59-60`),
   which is otherwise emitted raw by `get_adjacent_post_link()`. Verified by executing it: a
   `<`-encoded payload is decoded, kses'd, and re-serialized before storage.
-* **`wp-admin/includes/media.php:1717`, `:3180`, `:3230` are still unescaped** — the three
-  output sinks named in HackerOne #3931771 and its addendum. WordPress 7.1 fixed the *write*
-  primitive (the finalize provenance allowlist in
-  `class-wp-rest-attachments-controller.php:3087-3115`) but did not add `esc_url()` to the
-  sinks. I could not find any remaining way to put a quote into `_wp_attachment_metadata`
-  (`sanitize_file_name()` strips `'` and `"`; `wp-admin/post.php:231` uses `wp_basename()`; the
-  ID3 path is confined to id3 keys), so this is a hardening observation, not a vulnerability,
-  and is deliberately not in the report.
-* **REST read authorization is clean.** All 127 GET-reachable routes probed anonymously and as
+* **The 7.1 finalize provenance allowlist holds.** `validate_sub_size_provenance()`
+  (`class-wp-rest-attachments-controller.php:3087-3115`) was attacked directly at Author
+  privilege over HTTP (`poc/t_finalize.py`): traversal, absolute paths, `./`-prefixed and
+  trailing-space variants of allowed names, case variants, a quote-bearing name, `file` as an
+  array or a number, `original_image` traversal, and the grouped `image_size` array branch all
+  return `400 rest_invalid_sub_size_file` or `400 rest_invalid_param`. The only values that land
+  are ones the endpoint itself produced. **Note for anyone re-running this:** the `sideload` and
+  `finalize` routes only register when `wp_is_client_side_media_processing_enabled()` is true —
+  `is_ssl() || 'localhost' === $host || str_ends_with( $host, '.localhost' )` — so a lab reached
+  as `127.0.0.1` never registers them and silently returns `rest_no_route`.
+* **The two sinks behind that fix were *not* hardened, and remain unreachable.**
+  `wp-admin/includes/media.php:1717`, `:3180` and `:3230` still emit `$thumb_url` /
+  `$attachment_url` with no `esc_url()` (the fix HackerOne #3931771 and its addendum asked for),
+  and the `$backup_sizes` branch of `wp_delete_attachment_files()` (`wp-includes/post.php`) still
+  derives both `$del_dir` and `$del_file` from the attacker-influenced `$meta['file']` (the
+  hardening #3931777 asked for). WordPress fixed only the write primitive in both cases. I could
+  not reach either sink: `sanitize_file_name()` strips `'` and `"`, `wp-admin/post.php:231` uses
+  `wp_basename()`, the ID3 path is confined to id3 keys, and every allowlisted name stays inside
+  the uploads directory, so `wp_delete_file_from_directory()`'s `realpath()` containment still
+  holds. Defence-in-depth observation only — deliberately not in the report.
+* **No arbitrary file write at Author privilege.** Both `POST /wp/v2/media` and the new
+  `POST /wp/v2/media/<id>/sideload` were driven with `.php`, `.phtml`, `.phar`, `.svg`, `.html`,
+  `.xhtml`, `.htaccess`, `.jsp`, null-byte, double-extension and `../../` filenames across the
+  `thumbnail`, `animated_video` and `source-image` sizes. Everything dangerous is refused
+  ("Sorry, you are not allowed to upload this file type"), traversal is reduced to a basename,
+  and `x.php.png` lands as `x.php_.png`.
+* **REST read authorization is clean.** The full route index was re-enumerated over HTTP with
+  `Host: localhost` (135 route patterns, including `sideload`/`finalize`); all 127 concrete
+  GET-reachable paths were probed anonymously and as
   each of the five roles; nothing readable that should not be.
 * **SSRF blocked.** `/wp-block-editor/v1/url-details` at Contributor privilege rejects
   `127.0.0.1`, `localhost`, `[::1]`, `0`, `127.1`, decimal/octal/hex encodings, and
