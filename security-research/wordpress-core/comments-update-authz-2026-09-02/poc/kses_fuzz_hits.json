@@ -1,0 +1,1218 @@
+[
+ [
+  "post",
+  "<object data=\"javascript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object wp-note-mentiondata=\"javascript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object wp-note-mentiondata=\"javascript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"jav&#x6a;ajavascript:script:alert(1?>)\">",
+  "<object>)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"jav&#x6a;ajavascript:script:alert(1?>)\">",
+  "<p><object>)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"ja=vascript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"ja=vascript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "\t<object data=\"javascript:alert(1)\">",
+  "\t<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "\t<object data=\"javascript:alert(1)\">",
+  "<p>\t<object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascr\u0000ipt:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascr\u0000ipt:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object =data;=\"javascript:javascript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object =data;=\"javascript:javascript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object &data=\"javascript:ale\u00e2\u0080\u00a8rt(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object &data=\"javascript:ale\u00e2\u0080\u00a8rt(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<!--<object data=\"javasc\tript:\u0000alert(1)\">",
+  "&lt;!--<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<!--<object data=\"javasc\tript:\u0000alert(1)\">",
+  "<p>&lt;!&#8211;<object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javas\ncript:ale`rt(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javas\ncript:ale`rt(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascrip\nt:alert&(-->1\")\">",
+  "<object>1\")\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascrip\nt:alert&(-->1\")\">",
+  "<p><object>1&#8243;)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascr]]\u0000>ipt:alert(1&)\">",
+  "<object>ipt:alert(1&amp;)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascr]]\u0000>ipt:alert(1&)\">",
+  "<p><object>ipt:alert(1&amp;)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<title <svg <object data=\"-->javascript:alert</b>(1)\">",
+  "&lt;title &lt;svg <object>javascript:alert</b>(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<title <svg <object data=\"-->javascript:alert</b>(1)\">",
+  "<p>&lt;title &lt;svg <object>javascript:alert</b>(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javasc--ript:alert(1)\t\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javasc--ript:alert(1)\t\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data\n=\"javascript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data\n=\"javascript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=-->\"ja<//vascript:aler&t(1\r)\">",
+  "<object>\"ja<//vascript:aler&amp;t(1\r)\">",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=-->\"ja<//vascript:aler&t(1\r)\">",
+  "<p><object>&#8220;ja<//vascript:aler&amp;t(1\n)\"></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"jav?>ascwp-note-mentionript:alert(1)\">",
+  "<object>ascwp-note-mentionript:alert(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"jav?>ascwp-note-mentionript:alert(1)\">",
+  "<p><object>ascwp-note-mentionript:alert(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascr!ipt:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascr!ipt:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"jav-->ascript:<?alert(1\t)\">",
+  "<object>ascript:",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"jav-->ascript:<?alert(1\t)\">",
+  "<p><object>ascript:</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"jav\ufeffascript:\u00ef\u00bb\u00bfalert(1)\"]]>>\r",
+  "<object>&gt;\r",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"jav\ufeffascript:\u00ef\u00bb\u00bfalert(1)\"]]>>\r",
+  "<p><object>&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javasc=ript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javasc=ript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javas'cript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javas'cript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"\\javascript:a le--!>rt(1)\">",
+  "<object>rt(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"\\javascript:a le--!>rt(1)\">",
+  "<p><object>rt(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object d\\ata=\"javascrip\nt:al-->ert<(1)\">",
+  "<object>ert",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object d\\ata=\"javascrip\nt:al-->ert<(1)\">",
+  "<p><object>ert</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object \tdata=\"j\navascript:ale`rt(1\u0000)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object \tdata=\"j\navascript:ale`rt(1\u0000)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascript:alert(1)\"srcdoc=>",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascript:alert(1)\"srcdoc=>",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascript:alert(1)\"`>",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascript:alert(1)\"`>",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "&amp;<object dat\u0000a=\"javascript:alert(1)\">",
+  "&amp;<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "&amp;<object dat\u0000a=\"javascript:alert(1)\">",
+  "<p>&amp;<object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object d\u00ef\u00bb\u00bfata=\"javascr\ufeffi\rpt:al-->ert(1)\">",
+  "<object>ert(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object d\u00ef\u00bb\u00bfata=\"javascr\ufeffi\rpt:al-->ert(1)\">",
+  "<p><object>ert(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascript:alert(&lt;1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascript:alert(&lt;1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascript:a&colon;lert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascript:a&colon;lert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascript:alert(1)\n\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascript:alert(1)\n\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object\u0000 data=\"ja vascript:alert(1)\"><title ",
+  "<object>&lt;title ",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object\u0000 data=\"ja vascript:alert(1)\"><title ",
+  "<p><object>&lt;title </p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"j!avascript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"j!avascript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascript:aler>t--!>(1)\">",
+  "<object>t--!&gt;(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascript:aler>t--!>(1)\">",
+  "<p><object>t&#8211;!&gt;(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data/=&lt;\"javascript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data/=&lt;\"javascript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object\u0000 data=\"javascript:a\u0000le/rt(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object\u0000 data=\"javascript:a\u0000le/rt(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javasc\nript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javasc\nript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object dat]]>a=\"javasc\"rip<iframe t:alert(1)\">",
+  "<object>a=\"javasc\"rip",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object dat]]>a=\"javasc\"rip<iframe t:alert(1)\">",
+  "<p><object>a=&#8221;javasc&#8221;rip</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascript:alert(`1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascript:alert(`1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"jav&ascript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"jav&ascript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object dat&NewLine;a=\"javascript:alert(1)\"><svg ",
+  "<object>&lt;svg ",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object dat&NewLine;a=\"javascript:alert(1)\"><svg ",
+  "<p><object>&lt;svg </p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<?<object da\nta=\"javascr`ipt:alert(1)\">",
+  "&lt;?<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<?<object da\nta=\"javascr`ipt:alert(1)\">",
+  "<p>&lt;?<object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javasc?>ript:alert(1)\">",
+  "<object>ript:alert(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javasc?>ript:alert(1)\">",
+  "<p><object>ript:alert(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"java&NewLine;script:alert(1)\">&",
+  "<object>&amp;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"java&NewLine;script:alert(1)\">&",
+  "<p><object>&amp;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object `data=\"javas>cript<:al'ert(1)\">",
+  "<object>cript",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object `data=\"javas>cript<:al'ert(1)\">",
+  "<p><object>cript</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<ob\u0000ject data=\"javascript:a\\lert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<ob\u0000ject data=\"javascript:a\\lert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object dat'a=;\"javascript:aler\u00e2\u0080\u00a8t(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object dat'a=;\"javascript:aler\u00e2\u0080\u00a8t(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascript&lt;:a\u00ef\u00bb\u00bflert(1)\">`",
+  "<object>`",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascript&lt;:a\u00ef\u00bb\u00bflert(1)\">`",
+  "<p><object>`</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object\t da]]></ta=\"javascript&amp;:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object\t da]]></ta=\"javascript&amp;:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object dat a=\"javascript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object dat a=\"javascript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascrip\rt:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascrip\rt:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascript:aler\u2028t(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascript:aler\u2028t(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data]]>=\"javascript:alert(1)\">",
+  "<object>=\"javascript:alert(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data]]>=\"javascript:alert(1)\">",
+  "<p><object>=&#8221;javascript:alert(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"&colon;javascript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"&colon;javascript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"j\u00ef\u00bb\u00bfavascript:aler]]>t(1)\">",
+  "<object>t(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"j\u00ef\u00bb\u00bfavascript:aler]]>t(1)\">",
+  "<p><object>t(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascript:javascript:alert(1)\">/",
+  "<object>/",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascript:javascript:alert(1)\">/",
+  "<p><object>/</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object> data=\"jav\na<style script:alert(1)\"><style ",
+  "<object> data=\"jav\na&lt;style ",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object> data=\"jav\na<style script:alert(1)\"><style ",
+  "<p><object> data=&#8221;jav<br />\na&lt;style </p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascuser-1ript:aler\u00e2\u0080\u00a8\u00ef\u00bb\u00bft(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascuser-1ript:aler\u00e2\u0080\u00a8\u00ef\u00bb\u00bft(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascrip-->t&#x6a;:alert(1)\">",
+  "<object>t&#x6a;:alert(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascrip-->t&#x6a;:alert(1)\">",
+  "<p><object>t&#x6a;:alert(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"--!>javascript:alert(1)\">",
+  "<object>javascript:alert(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"--!>javascript:alert(1)\">",
+  "<p><object>javascript:alert(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascript:alert(1)\">&c\\o\u2028lon;",
+  "<object>&amp;c\\o\u2028lon;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascript:alert(1)\">&c\\o\u2028lon;",
+  "<p><object>&amp;c\\o\u2028lon;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object \u0000data=\"javascript:alert(1)&NewLine;\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object \u0000data=\"javascript:alert(1)&NewLine;\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object  data=\"ja/vascript:al]]>ert(1)\">",
+  "<object>ert(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object  data=\"ja/vascript:al]]>ert(1)\">",
+  "<p><object>ert(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javas\rcript:aler-->t(1)\">",
+  "<object>t(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javas\rcript:aler-->t(1)\">",
+  "<p><object>t(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=?>\"/javascript:alert(1)\">",
+  "<object>\"/javascript:alert(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=?>\"/javascript:alert(1)\">",
+  "<p><object>&#8220;/javascript:alert(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object dat&lt;a?>=\"javascript:user<!-1alert(1)\">",
+  "<object>=\"javascript:user",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object dat&lt;a?>=\"javascript:user<!-1alert(1)\">",
+  "<p><object>=&#8221;javascript:user</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object `data=\";jav\u2028ascript:alert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object `data=\";jav\u2028ascript:alert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data]]>=\"javascript:alert(1\u0000)\">",
+  "<object>=\"javascript:alert(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data]]>=\"javascript:alert(1\u0000)\">",
+  "<p><object>=&#8221;javascript:alert(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascr/ipt:wp-note-mentionalert(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascr/ipt:wp-note-mentionalert(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"]]>javas\tcript:ale\u00e2\u0080user-1\u00a8rt(1)\">",
+  "<object>javas\tcript:ale\u00e2\u0080user-1\u00a8rt(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"]]>javas\tcript:ale\u00e2\u0080user-1\u00a8rt(1)\">",
+  "<p><object>javas\tcript:ale\u00e2\u0080user-1\u00a8rt(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascr&amp;\u0000ipt:alert( 1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascr&amp;\u0000ipt:alert( 1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\" javascript:alert(1) \">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\" javascript:alert(1) \">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object d?>ata=\"javascript:ale'rt(1)\u0000\">",
+  "<object>ata=\"javascript:ale'rt(1)\"&gt;",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object d?>ata=\"javascript:ale'rt(1)\u0000\">",
+  "<p><object>ata=&#8221;javascript:ale&#8217;rt(1)&#8221;&gt;</p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object \tdata=\"jav!ascript:alert(\ufeff1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object \tdata=\"jav!ascript:alert(\ufeff1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post",
+  "<object data=\"javascript:a\u2028le\u00ef\u00bb\u00bfrt(1)\">",
+  "<object>",
+  [
+   "tag:object"
+  ]
+ ],
+ [
+  "post_display",
+  "<object data=\"javascript:a\u2028le\u00ef\u00bb\u00bfrt(1)\">",
+  "<p><object></p>\n",
+  [
+   "tag:object"
+  ]
+ ]
+]

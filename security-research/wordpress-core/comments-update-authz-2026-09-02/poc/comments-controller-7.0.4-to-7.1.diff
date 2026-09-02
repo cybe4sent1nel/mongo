@@ -1,0 +1,28 @@
+diff --git a/wp-includes/rest-api/endpoints/class-wp-rest-comments-controller.php b/wp-includes/rest-api/endpoints/class-wp-rest-comments-controller.php
+index f46292884..d14aefb1f 100644
+--- a/wp-includes/rest-api/endpoints/class-wp-rest-comments-controller.php
++++ b/wp-includes/rest-api/endpoints/class-wp-rest-comments-controller.php
+@@ -2049,17 +2049,15 @@ class WP_REST_Comments_Controller extends WP_REST_Controller {
+ 	 */
+ 	private function check_post_type_supports_notes( $post_type ) {
+ 		$supports = get_all_post_type_supports( $post_type );
++
+ 		if ( ! isset( $supports['editor'] ) ) {
+ 			return false;
+ 		}
++
+ 		if ( ! is_array( $supports['editor'] ) ) {
+ 			return false;
+ 		}
+-		foreach ( $supports['editor'] as $item ) {
+-			if ( ! empty( $item['notes'] ) ) {
+-				return true;
+-			}
+-		}
+-		return false;
++
++		return array_any( $supports['editor'], fn( $item ) => ! empty( $item['notes'] ) );
+ 	}
+ }
+ .../rest-api/endpoints/class-wp-rest-comments-controller.php   | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
