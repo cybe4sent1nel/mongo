@@ -1,0 +1,26 @@
+=== config ===
+     images: {
+       // Only `allowed.test` is allowlisted. `notallowed.test` is NOT.
+       remotePatterns: [{ protocol: 'http', hostname: 'allowed.test' }],
+       // Disables ONLY the private-IP guard, not hasRemoteMatch(). This isolates
+       // the question: is the redirect target re-checked against remotePatterns?
+       dangerouslyAllowLocalIP: true,
+     },
+   /etc/hosts: allowed.test and notallowed.test both -> 127.0.0.1
+
+=== 1. sanity: the allowlisted host issues an open redirect ===
+   302 -> http://notallowed.test/y.png
+
+=== 2. attacker request, naming ONLY the allowlisted host ===
+   GET /_next/image?url=http://allowed.test/x.png&w=640&q=75
+   http status = 400
+
+=== 3. which upstream hosts the server actually contacted ===
+   ALLOWED HOST hit /x.png -> 302 http://notallowed.test/y.png
+   ALLOWED HOST hit /x.png -> 302 http://notallowed.test/y.png
+   NOT-ALLOWLISTED HOST REACHED: /y.png host=notallowed.test
+   -> notallowed.test is NOT in remotePatterns, yet it was fetched.
+      The redirect target is not re-validated against the allowlist.
+
+=== 4. what Next.js logged ===
+   ⨯ The requested resource isn't a valid image for http://allowed.test/x.png received null
