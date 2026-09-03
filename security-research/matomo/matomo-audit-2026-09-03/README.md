@@ -8,7 +8,7 @@ findings "based solely on code analysis … without demonstrated exploitability"
 
 | | |
 |---|---|
-| Target | Matomo 5.13.0, PHP 8.4.19, MariaDB, `http://127.0.0.1:8400` |
+| Target | Matomo 5.13.0 + 8 official `matomo-org` plugins, PHP 8.4.19, MariaDB, `http://127.0.0.1:8400` |
 | Roles provisioned | anonymous, `view`, `write`, `admin`, `superuser` (session cookies **and** API tokens for each) |
 | Execution oracle | headless Chromium (Playwright) with `alert`/`confirm`/`prompt` hooked, `window.__XH` sink, and every DOM event dispatched on every node in every frame |
 
@@ -24,6 +24,11 @@ claiming it as a vulnerability.
 **Class:** CWE-116 (improper encoding) — escape-then-substitute ordering
 **Privilege to reach the sink:** `view` on the site (`SitesManager.getJavascriptTag` only calls
 `Piwik::checkUserHasViewAccess($idSite)`)
+
+The method is deliberately marked `@unsanitized` (`plugins/SitesManager/API.php:165`), so
+`Piwik\API\Proxy` hands it raw request values on purpose — the tracking snippet has to contain
+literal characters. That makes the escaping at the *sink* the only control, and it is applied in
+the wrong order.
 
 ### The defect
 
@@ -108,6 +113,32 @@ Escape each substituted value rather than the template, e.g. build `$options` wi
 beforehand.
 
 ---
+
+### Related, same class, also not exploitable
+
+`plugins/Annotations/API.php` sets `$autoSanitizeInputParams = false`, and annotation notes are
+stored **completely raw** — verified in the database, written by a **`view`** user:
+
+```
+mysql> select substring(note,1,60) from matomo_annotations order by id desc limit 3;
+<img src=x onerror=window.top.__XH.push('ANNOT_ICON_XSS')>
+<!--<script>--><img src=x onerror="window.top.__XH&&window.top.__XH.push('ann2__cmt')">
+<a href="javas&#99;ript:window.top.__XH&&…">z</a>
+```
+
+Reads are re-encoded by `decorateAnnotation()` (`Common::sanitizeInputValue`), which every read
+path calls **except one**: `getAnnotationCountForDates()` assigns
+`$result[$siteId][$i][1]['note'] = (string)$annotation['note'];` (`API.php:281`) with no
+sanitisation. Its only consumer, `getEvolutionIcons.twig`, happens to be safe — the note goes
+through `|e('html_attr')` *and* Twig's HTML autoescape (`translate` carries no `is_safe` flag), so
+it is double-escaped. Verified live: an annotation on a date with `$totalCount === 1` renders the
+icon tooltip inert, 8 pages in Chromium (evolution icons, annotation manager, evolution graph,
+Visitors Overview for that date and range) → **0 executions**; `format=html|xml|original` on
+`Annotations.getAnnotationCountForDates` all re-escape (only `format=json` returns it raw, which
+is Matomo's documented contract for JSON).
+
+Worth fixing so the invariant "notes leave the API sanitised" holds on every path rather than by
+coincidence at one template.
 
 ## 2. Stored XSS — negative, empirically
 
@@ -245,7 +276,32 @@ endpoints. No cross-user or cross-site write was reachable.
   of the proxy and explicitly out of scope ("analytics pollution through the public tracking
   endpoint").
 
-## 8. Methodology notes (two traps that would have produced false results)
+## 8. Official matomo-org plugins — negative
+
+Eight in-scope plugins from the `matomo-org` organisation were cloned at HEAD, **installed into
+the live instance and activated** (`CustomAlerts`, `SecurityInfo`, `TrackingSpamPrevention`,
+`Bandwidth`, `LogViewer`, `QueuedTracking`, `Provider`; `LoginLdap` reviewed statically — no LDAP
+server available), then put through the same batteries.
+
+* **CustomAlerts** deliberately stores alert `name` and `description` **raw**
+  (`API.php:155` `Common::unsanitizeInputValue($name)`), reachable at **write** privilege — I
+  confirmed raw `<img src=x onerror=…>` in `matomo_alert.name`. Every render path escapes it
+  again: `{{ alert.name }}` in `htmlTriggeredAlerts.twig` / `textTriggeredAlerts.twig` /
+  `smsTriggeredAlerts.twig` (Twig autoescape) and `{{ alert.name }}` in `ListAlerts.vue` (Vue text
+  interpolation); `EditAlert.vue` binds it with `v-model`, not `v-html`. 13 pages rendered in
+  Chromium including the alert list, history, add and edit forms — **0 executions**.
+* `LogViewer` is superuser-only and reads a path from `config.ini.php`, never the request.
+* `SecurityInfo`'s `PhpSecInfo::loadView()` (`include $view_file` + `extract($data)`) is called
+  only with internal literals from a superuser-gated controller.
+* `LoginLdap` builds every filter through `Client::escapeFilterParameter()` →
+  `ldap_escape(..., LDAP_ESCAPE_FILTER)`; no unescaped concatenation into `ldap_search`.
+* `TrackingSpamPrevention`'s outbound fetches are hard-coded vendor IP-range URLs.
+* `QueuedTracking` contains no `unserialize()`; its Redis `eval()` calls take static Lua scripts.
+
+The reflected/traversal sweep was re-run with these plugins installed (57 controllers, 254
+actions, 1692 probes at `view` privilege) — **0 hits**.
+
+## 9. Methodology notes (two traps that would have produced false results)
 
 1. **Self-poisoning oracle.** The first Chromium run reported "hits" on 37/37 pages. They were all
    my own instrumentation: I had hooked `window.eval`, and Playwright's `page.evaluate()` goes
