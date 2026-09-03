@@ -1,0 +1,31 @@
+--------------------------------------------------------------
+[control 1] a non-allowlisted method is blocked as designed
+  HTTP 404  0 bytes  content-type=text/html; charset=UTF-8
+--------------------------------------------------------------
+[control 2] no parameters is blocked as designed
+  HTTP 404  0 bytes  content-type=text/html; charset=UTF-8
+--------------------------------------------------------------
+[control 3] the intended endpoint (small opt-out iframe document)
+  HTTP 200  2697 bytes  content-type=text/html; charset=utf-8
+  Set-Cookie: MATOMO_SESSID=48e1a54b9a60359ee13a2b71a177b1ca; path=/; HttpOnly; SameSite=Lax
+--------------------------------------------------------------
+[BYPASS] empty module/action in the query, allowlisted pair in the body
+  HTTP 200  235145 bytes  content-type=text/html; charset=utf-8
+  Set-Cookie: MATOMO_SESSID=1c8102bbe8cb3aea736fcc41da73a685; path=/; HttpOnly; SameSite=Lax
+  <title>Sign in - Matomo</title>
+  leaked login form field: name="form_login"
+  leaked login form field: name="form_nonce"
+  leaked login form field: name="form_redirect"
+--------------------------------------------------------------
+[BYPASS variant] module kept, action emptied -> CoreAdminHome default action
+  HTTP 200  235145 bytes  content-type=text/html; charset=utf-8
+  Set-Cookie: MATOMO_SESSID=4528a4938ccb1bfb815dac8ac7a95aa9; path=/; HttpOnly; SameSite=Lax
+  <title>Sign in - Matomo</title>
+  leaked login form field: name="form_login"
+  leaked login form field: name="form_nonce"
+  leaked login form field: name="form_redirect"
+--------------------------------------------------------------
+
+Expected on a vulnerable install: the two [BYPASS] rows return a full
+Matomo application page (Sign in), not the ~2.7 KB opt-out document, and
+set a MATOMO_SESSID cookie on the tracked site's origin.
