@@ -1,0 +1,14 @@
+[
+  "{\"type\":\"isrManifest\",\"data\":{\"/\":true}}",
+  "{\"type\":\"turbopack-connected\",\"data\":{\"sessionId\":2216248147720025}}",
+  "{\"type\":\"sync\",\"errors\":[],\"warnings\":[],\"hash\":\"\",\"versionInfo\":{\"staleness\":\"fresh\",\"installed\":\"16.3.4\"},\"debug\":{},\"devIndicator\":{\"disabledUntil\":0},\"devToolsConfig\":{}}",
+  "{\"type\":\"isrManifest\",\"data\":{}}",
+  "{\"type\":\"built\",\"hash\":\"2\",\"errors\":[],\"warnings\":[]}",
+  "{\"type\":\"isrManifest\",\"data\":{\"/\":true}}",
+  "{\"type\":\"built\",\"hash\":\"2\",\"errors\":[],\"warnings\":[]}",
+  "{\"type\":\"built\",\"hash\":\"3\",\"errors\":[{\"message\":\"./app/page.js:3:1\\nError: Expected '}', got '<eof>'\\n  \\u001b[90m1 |\\u001b[0m \\u001b[36mconst\\u001b[0m \\u001b[33mAPI_KEY\\u001b[0m = \\u001b[32m\\\"sk-live-51H9xQ2rTvB8mNpK4wZ\\\"\\u001b[0m\\n  \\u001b[90m2 |\\u001b[0m \\u001b[36mexport\\u001b[0m \\u001b[36mdefault\\u001b[0m \\u001b[36mfunction\\u001b[0m \\u001b[33mHome\\u001b[0m() { \\u001b[36mreturn\\u001b[0m <main>nextlab home</main >\\n\\u001b[31m\\u001b[1m>\\u001b[0m \\u001b[90m3 |\\u001b[0m\\n  \\u001b[90m  |\\u001b[0m \\u001b[31m\\u001b[1m^\\u001b[0m\\n\\nParsing ecmascript source code failed\\n\\n\"}],\"warnings\":[]}",
+  "{\"type\":\"serverComponentChanges\"}",
+  "{\"type\":\"isrManifest\",\"data\":{}}",
+  "{\"type\":\"isrManifest\",\"data\":{\"/\":true}}",
+  "{\"type\":\"built\",\"hash\":\"4\",\"errors\":[],\"warnings\":[]}"
+]

