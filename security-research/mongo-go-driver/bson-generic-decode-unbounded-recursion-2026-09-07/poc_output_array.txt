@@ -1,0 +1,328 @@
+building nested BSON array, depth=2000000
+built 16000005 bytes, calling bson.Unmarshal into bson.M...
+runtime: goroutine stack exceeds 1000000000-byte limit
+runtime: sp=0xc021042328 stack=[0xc021042000, 0xc041042000]
+fatal error: stack overflow
+
+runtime stack:
+runtime.throw({0x56ec49?, 0x414c05?})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/panic.go:1094 +0x48 fp=0xc000063e98 sp=0xc000063e68 pc=0x470f08
+runtime.newstack()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/stack.go:1159 +0x5bd fp=0xc000063fc8 sp=0xc000063e98 pc=0x4579fd
+runtime.morestack()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/asm_amd64.s:620 +0x7d fp=0xc000063fd0 sp=0xc000063fc8 pc=0x47605d
+
+goroutine 1 gp=0xc000002380 m=3 mp=0xc00004f008 [running]:
+go.mongodb.org/mongo-driver/v2/bson.(*valueReader).ReadArray(0xc000096000)
+	/home/user/mongo-go-driver-audit/bson/value_reader.go:364 +0x106 fp=0xc021042338 sp=0xc021042330 pc=0x517286
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1342 +0x5e fp=0xc0210424b8 sp=0xc021042338 pc=0x4f9cbe
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc0210426e0?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc021042660 sp=0xc0210424b8 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc0210426f0 sp=0xc021042660 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc0210427e8 sp=0xc0210426f0 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc021042878 sp=0xc0210427e8 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc0210429f8 sp=0xc021042878 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc021042c20?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc021042ba0 sp=0xc0210429f8 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc021042c30 sp=0xc021042ba0 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc021042d28 sp=0xc021042c30 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc021042db8 sp=0xc021042d28 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc021042f38 sp=0xc021042db8 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc021043160?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc0210430e0 sp=0xc021042f38 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc021043170 sp=0xc0210430e0 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc021043268 sp=0xc021043170 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc0210432f8 sp=0xc021043268 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc021043478 sp=0xc0210432f8 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc0210436a0?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc021043620 sp=0xc021043478 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc0210436b0 sp=0xc021043620 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc0210437a8 sp=0xc0210436b0 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc021043838 sp=0xc0210437a8 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc0210439b8 sp=0xc021043838 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc021043be0?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc021043b60 sp=0xc0210439b8 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc021043bf0 sp=0xc021043b60 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc021043ce8 sp=0xc021043bf0 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc021043d78 sp=0xc021043ce8 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc021043ef8 sp=0xc021043d78 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc021044120?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc0210440a0 sp=0xc021043ef8 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc021044130 sp=0xc0210440a0 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc021044228 sp=0xc021044130 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc0210442b8 sp=0xc021044228 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc021044438 sp=0xc0210442b8 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc021044660?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc0210445e0 sp=0xc021044438 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc021044670 sp=0xc0210445e0 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc021044768 sp=0xc021044670 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc0210447f8 sp=0xc021044768 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc021044978 sp=0xc0210447f8 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc021044ba0?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc021044b20 sp=0xc021044978 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc021044bb0 sp=0xc021044b20 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc021044ca8 sp=0xc021044bb0 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc021044d38 sp=0xc021044ca8 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc021044eb8 sp=0xc021044d38 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc0210450e0?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc021045060 sp=0xc021044eb8 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc0210450f0 sp=0xc021045060 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc0210451e8 sp=0xc0210450f0 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc021045278 sp=0xc0210451e8 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc0210453f8 sp=0xc021045278 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc021045620?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc0210455a0 sp=0xc0210453f8 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc021045630 sp=0xc0210455a0 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc021045728 sp=0xc021045630 pc=0x501033
+...1997188 frames elided...
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc04103efb0 sp=0xc04103ef20 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc04103f0a8 sp=0xc04103efb0 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc04103f138 sp=0xc04103f0a8 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc04103f2b8 sp=0xc04103f138 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc0000fb4e0?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc04103f460 sp=0xc04103f2b8 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc04103f4f0 sp=0xc04103f460 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc04103f5e8 sp=0xc04103f4f0 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc04103f678 sp=0xc04103f5e8 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc04103f7f8 sp=0xc04103f678 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc0000fba20?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc04103f9a0 sp=0xc04103f7f8 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc04103fa30 sp=0xc04103f9a0 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc04103fb28 sp=0xc04103fa30 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc04103fbb8 sp=0xc04103fb28 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc04103fd38 sp=0xc04103fbb8 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc0000fbf60?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc04103fee0 sp=0xc04103fd38 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc04103ff70 sp=0xc04103fee0 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc041040068 sp=0xc04103ff70 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc0410400f8 sp=0xc041040068 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc041040278 sp=0xc0410400f8 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc0000fc4a0?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc041040420 sp=0xc041040278 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc0410404b0 sp=0xc041040420 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc0410405a8 sp=0xc0410404b0 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc041040638 sp=0xc0410405a8 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc0410407b8 sp=0xc041040638 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc0000dc9e0?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc041040960 sp=0xc0410407b8 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc0410409f0 sp=0xc041040960 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc041040ae8 sp=0xc0410409f0 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc041040b78 sp=0xc041040ae8 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc041040cf8 sp=0xc041040b78 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc0000dcf20?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc041040ea0 sp=0xc041040cf8 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc041040f30 sp=0xc041040ea0 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc041041028 sp=0xc041040f30 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc0410410b8 sp=0xc041041028 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc041041238 sp=0xc0410410b8 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc0000dd460?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc0410413e0 sp=0xc041041238 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc041041470 sp=0xc0410413e0 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc041041568 sp=0xc041041470 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc0410415f8 sp=0xc041041568 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.decodeDefault({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/default_value_decoders.go:1418 +0x3af fp=0xc041041778 sp=0xc0410415f8 pc=0x4fa00f
+go.mongodb.org/mongo-driver/v2/bson.(*sliceCodec).DecodeValue(0xc0000dd9a0?, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/slice_codec.go:160 +0x4f5 fp=0xc041041920 sp=0xc041041778 pc=0x50e535
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ec0, 0xc00009a1c4}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:201 +0x1fc fp=0xc0410419b0 sp=0xc041041920 pc=0x4e9fdc
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0xc00009a1c0, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/empty_interface_codec.go:99 +0x373 fp=0xc041041aa8 sp=0xc0410419b0 pc=0x501033
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x5a8ca0, 0xc00009a1c0}, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/bsoncodec.go:186 +0xad fp=0xc041041b38 sp=0xc041041aa8 pc=0x4e9e8d
+go.mongodb.org/mongo-driver/v2/bson.(*mapCodec).DecodeValue(0xc00009a1c1, {0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-go-driver-audit/bson/map_codec.go:179 +0x719 fp=0xc041041cc0 sp=0xc041041b38 pc=0x5085f9
+go.mongodb.org/mongo-driver/v2/bson.(*Decoder).Decode(0xc000096080, {0x548b20?, 0xc00009c058})
+	/home/user/mongo-go-driver-audit/bson/decoder.go:76 +0x1fb fp=0xc041041da8 sp=0xc041041cc0 pc=0x4edc1b
+go.mongodb.org/mongo-driver/v2/bson.unmarshalFromReader({0xc0000ce080, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-go-driver-audit/bson/unmarshal.go:89 +0x125 fp=0xc041041e18 sp=0xc041041da8 pc=0x515e05
+go.mongodb.org/mongo-driver/v2/bson.Unmarshal({0xc000100000?, 0xf42405, 0x578796?}, {0x548b20, 0xc00009c058})
+	/home/user/mongo-go-driver-audit/bson/unmarshal.go:53 +0x118 fp=0xc041041ea8 sp=0xc041041e18 pc=0x515bd8
+main.main()
+	/home/user/gopoc/main.go:73 +0x1b6 fp=0xc041041f50 sp=0xc041041ea8 pc=0x522176
+runtime.main()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:285 +0x29d fp=0xc041041fe0 sp=0xc041041f50 pc=0x4401dd
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/asm_amd64.s:1693 +0x1 fp=0xc041041fe8 sp=0xc041041fe0 pc=0x477d81
+
+goroutine 2 gp=0xc0000028c0 m=nil [force gc (idle)]:
+runtime.gopark(0x0?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:460 +0xce fp=0xc000048fa8 sp=0xc000048f88 pc=0x470fee
+runtime.goparkunlock(...)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:466
+runtime.forcegchelper()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:373 +0xb3 fp=0xc000048fe0 sp=0xc000048fa8 pc=0x440513
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/asm_amd64.s:1693 +0x1 fp=0xc000048fe8 sp=0xc000048fe0 pc=0x477d81
+created by runtime.init.7 in goroutine 1
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:361 +0x1a
+
+goroutine 3 gp=0xc000002e00 m=nil [GC sweep wait]:
+runtime.gopark(0x1?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:460 +0xce fp=0xc000049780 sp=0xc000049760 pc=0x470fee
+runtime.goparkunlock(...)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:466
+runtime.bgsweep(0xc000068000)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgcsweep.go:323 +0xdf fp=0xc0000497c8 sp=0xc000049780 pc=0x42b99f
+runtime.gcenable.gowrap1()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:212 +0x25 fp=0xc0000497e0 sp=0xc0000497c8 pc=0x41fb85
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/asm_amd64.s:1693 +0x1 fp=0xc0000497e8 sp=0xc0000497e0 pc=0x477d81
+created by runtime.gcenable in goroutine 1
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:212 +0x66
+
+goroutine 4 gp=0xc000002fc0 m=nil [GC scavenge wait]:
+runtime.gopark(0x10000?, 0x5a75a0?, 0x0?, 0x0?, 0x0?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:460 +0xce fp=0xc000049f78 sp=0xc000049f58 pc=0x470fee
+runtime.goparkunlock(...)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:466
+runtime.(*scavengerState).park(0x6a9a40)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgcscavenge.go:425 +0x49 fp=0xc000049fa8 sp=0xc000049f78 pc=0x429409
+runtime.bgscavenge(0xc000068000)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgcscavenge.go:658 +0x59 fp=0xc000049fc8 sp=0xc000049fa8 pc=0x4299b9
+runtime.gcenable.gowrap2()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:213 +0x25 fp=0xc000049fe0 sp=0xc000049fc8 pc=0x41fb25
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/asm_amd64.s:1693 +0x1 fp=0xc000049fe8 sp=0xc000049fe0 pc=0x477d81
+created by runtime.gcenable in goroutine 1
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:213 +0xa5
+
+goroutine 17 gp=0xc000082380 m=nil [GOMAXPROCS updater (idle)]:
+runtime.gopark(0x0?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:460 +0xce fp=0xc000044788 sp=0xc000044768 pc=0x470fee
+runtime.goparkunlock(...)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:466
+runtime.updateMaxProcsGoroutine()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:6706 +0xe7 fp=0xc0000447e0 sp=0xc000044788 pc=0x44e307
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/asm_amd64.s:1693 +0x1 fp=0xc0000447e8 sp=0xc0000447e0 pc=0x477d81
+created by runtime.defaultGOMAXPROCSUpdateEnable in goroutine 1
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:6694 +0x37
+
+goroutine 18 gp=0xc000082540 m=nil [finalizer wait]:
+runtime.gopark(0x44f2d5?, 0x4288fc?, 0xa0?, 0xa5?, 0x490013?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:460 +0xce fp=0xc000048620 sp=0xc000048600 pc=0x470fee
+runtime.runFinalizers()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mfinal.go:210 +0x107 fp=0xc0000487e0 sp=0xc000048620 pc=0x41eb27
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/asm_amd64.s:1693 +0x1 fp=0xc0000487e8 sp=0xc0000487e0 pc=0x477d81
+created by runtime.createfing in goroutine 1
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mfinal.go:172 +0x3d
+
+goroutine 19 gp=0xc000082a80 m=nil [GC worker (idle)]:
+runtime.gopark(0x0?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:460 +0xce fp=0xc000044f38 sp=0xc000044f18 pc=0x470fee
+runtime.gcBgMarkWorker(0xc000098230)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:1463 +0xeb fp=0xc000044fc8 sp=0xc000044f38 pc=0x42206b
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:1373 +0x25 fp=0xc000044fe0 sp=0xc000044fc8 pc=0x421f45
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/asm_amd64.s:1693 +0x1 fp=0xc000044fe8 sp=0xc000044fe0 pc=0x477d81
+created by runtime.gcBgMarkStartWorkers in goroutine 1
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:1373 +0x105
+
+goroutine 20 gp=0xc000082c40 m=nil [GC worker (idle)]:
+runtime.gopark(0x110f9288894?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:460 +0xce fp=0xc000045738 sp=0xc000045718 pc=0x470fee
+runtime.gcBgMarkWorker(0xc000098230)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:1463 +0xeb fp=0xc0000457c8 sp=0xc000045738 pc=0x42206b
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:1373 +0x25 fp=0xc0000457e0 sp=0xc0000457c8 pc=0x421f45
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/asm_amd64.s:1693 +0x1 fp=0xc0000457e8 sp=0xc0000457e0 pc=0x477d81
+created by runtime.gcBgMarkStartWorkers in goroutine 1
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:1373 +0x105
+
+goroutine 21 gp=0xc000082e00 m=nil [GC worker (idle)]:
+runtime.gopark(0x110f9288e52?, 0x3?, 0x49?, 0x27?, 0x0?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:460 +0xce fp=0xc000045f38 sp=0xc000045f18 pc=0x470fee
+runtime.gcBgMarkWorker(0xc000098230)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:1463 +0xeb fp=0xc000045fc8 sp=0xc000045f38 pc=0x42206b
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:1373 +0x25 fp=0xc000045fe0 sp=0xc000045fc8 pc=0x421f45
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/asm_amd64.s:1693 +0x1 fp=0xc000045fe8 sp=0xc000045fe0 pc=0x477d81
+created by runtime.gcBgMarkStartWorkers in goroutine 1
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:1373 +0x105
+
+goroutine 22 gp=0xc000082fc0 m=nil [GC worker (idle)]:
+runtime.gopark(0x110f92891b3?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/proc.go:460 +0xce fp=0xc0000a5f38 sp=0xc0000a5f18 pc=0x470fee
+runtime.gcBgMarkWorker(0xc000098230)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:1463 +0xeb fp=0xc0000a5fc8 sp=0xc0000a5f38 pc=0x42206b
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:1373 +0x25 fp=0xc0000a5fe0 sp=0xc0000a5fc8 pc=0x421f45
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/asm_amd64.s:1693 +0x1 fp=0xc0000a5fe8 sp=0xc0000a5fe0 pc=0x477d81
+created by runtime.gcBgMarkStartWorkers in goroutine 1
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/src/runtime/mgc.go:1373 +0x105
