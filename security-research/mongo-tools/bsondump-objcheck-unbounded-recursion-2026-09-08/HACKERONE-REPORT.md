@@ -70,14 +70,14 @@ This is `mongo-tools`' own code (not the driver's) — it uses the lower-level `
 
 **Step 1 — get the `bsondump` binary.** Building from source is not required — it's what I used because my testing environment couldn't reach `fastdl.mongodb.org` to pull the official release, not because a source build is somehow necessary to trigger this. Either of the following gets the same binary:
 
-*Option A (preferred, no toolchain needed) — official prebuilt Database Tools release:*
+*Option A (preferred, no toolchain needed) — download the official prebuilt binary directly from `fastdl.mongodb.org`:*
 ```
 curl -sL -o tools.tgz \
-  https://fastdl.mongodb.org/tools/db/mongodb-database-tools-<platform>-100.18.0.tgz
+  https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2404-x86_64-100.18.0.tgz
 tar xzf tools.tgz --strip-components=2
 ./bsondump --version
 ```
-(substitute the correct `<platform>` string from MongoDB's [download page](https://www.mongodb.com/try/download/database-tools) — e.g. `ubuntu2404-x86_64`.)
+This pulls the real, signed, officially-released `bsondump` binary straight from MongoDB's own distribution host — nothing locally built or modified. The URL above is for Ubuntu 24.04 x86_64; for any other OS/architecture, swap the platform segment (`ubuntu2404-x86_64`) for the correct one listed on the [Database Tools download page](https://www.mongodb.com/try/download/database-tools) — the rest of the URL and every step after stays the same.
 
 *Option B (what I actually ran) — build from source, Go toolchain required:*
 ```
