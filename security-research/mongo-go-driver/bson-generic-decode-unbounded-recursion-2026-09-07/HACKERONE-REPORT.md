@@ -28,6 +28,7 @@ CWE-674 (Uncontrolled Recursion) → process-terminating stack overflow (`fatal 
 - Tag: `v2.9.0`
 - Commit: [`099a81f05c516dc85ee25fffcc09000d547ba994`](https://github.com/mongodb/mongo-go-driver/commit/099a81f05c516dc85ee25fffcc09000d547ba994) — current latest release
 - Confirmed with `go1.25.0 linux/amd64`, unmodified upstream module code (only a local `replace` directive in the PoC's own `go.mod` to point at a clean clone of this exact commit — no driver code was patched or altered).
+- `v2.9.0` was verified against upstream tags directly (not just a local clone) to be the current latest release at test time. `go get go.mongodb.org/mongo-driver/v2@latest` pulls whatever is newest — nothing in this decode chain has changed in any release history since, so a newer tag is expected to reproduce identically; no need to pin to `v2.9.0` specifically.
 
 ## Root cause, with links to the exact code
 

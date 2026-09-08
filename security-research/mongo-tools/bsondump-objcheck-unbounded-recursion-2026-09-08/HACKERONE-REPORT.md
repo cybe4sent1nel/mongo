@@ -22,6 +22,7 @@ CWE-674 (Uncontrolled Recursion) → process-terminating stack overflow (`fatal 
 - Commit: [`21a342dfee6468ad9350d156d25086da64dd03b1`](https://github.com/mongodb/mongo-tools/blob/21a342dfee6468ad9350d156d25086da64dd03b1/bsondump/bsondump.go) — the same tag/commit already cited in this program's existing `mongoimport --legacy` finding (a different, text-JSON code path; this report covers `bsondump`'s binary-`.bson` handling instead)
 - Vendored driver at this tag: `go.mongodb.org/mongo-driver/v2 v2.7.0` (older than the `v2.9.0` I audited directly for the standalone driver finding — confirms this gap has been present across at least three minor driver releases)
 - Confirmed by building the real, unmodified `bsondump` binary (`go build ./bsondump/main/`) from this exact tagged source tree.
+- `100.18.0` was the current latest Database Tools release at the time of this test (verified against upstream tags directly, not just this local clone). Nothing in the fix history since then touches `bsondump.go` or `printBSON`, so whatever is the latest release at the time this is read is expected to reproduce identically — download the current release from the [Database Tools download page](https://www.mongodb.com/try/download/database-tools) rather than pinning to `100.18.0` specifically if a newer one is available.
 
 ## Root cause, with links to the exact code
 

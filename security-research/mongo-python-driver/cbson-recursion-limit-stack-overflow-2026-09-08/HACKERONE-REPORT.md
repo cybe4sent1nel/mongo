@@ -20,6 +20,7 @@ CWE-674 (Uncontrolled Recursion) / CWE-1284 (Improper Validation of Specified Qu
 - Tag: `4.18.0`
 - Commit: [`8e7ece47f3c5a3908ef886d431c3dcc3feb56316`](https://github.com/mongodb/mongo-python-driver/blob/8e7ece47f3c5a3908ef886d431c3dcc3feb56316/bson/_cbsonmodule.c) — current latest release
 - Confirmed by building the driver's real, unmodified `_cbson` C extension from source against four CPython versions: 3.10.20, 3.11.15 (both **crash**), 3.12.3, 3.13.12 (both **safe**).
+- `4.18.0` was verified against upstream tags directly to be the current latest release at test time. `pip install pymongo==<latest>` (or no version pin at all) pulls whatever is newest — the recursion-guard code in `_cbsonmodule.c` is unchanged in any release since, so a newer tag is expected to reproduce identically on the same affected CPython versions (3.10/3.11); no need to pin to `4.18.0` specifically.
 
 ## Root cause, with links to the exact code
 
