@@ -97,18 +97,19 @@ Full raw output: `poc_output_311_crash.txt`, `poc_output_311_default_safe.txt`, 
 
 **A genuine, unmodified `mongod`/`mongos` cannot itself be used to store and later return a document deep enough to trigger this crash** — MongoDB's server enforces its own document-nesting cap (rejects documents past roughly 200 levels) at write time. So "an ordinary query response from a standard server" is not, on its own, a route to this crash, and I don't want that discovered by a reviewer rather than disclosed by me here.
 
-The two threat models I believe make this a real finding regardless:
+Correction on the record: an earlier draft of this report described the `mongo-csharp-driver` finding (#3790290/#3996918) as something MongoDB had "accepted." That's wrong — #3790290 was closed **Informative**, not accepted, despite a High (7-8.9) severity rating (severity and disposition are tracked independently). Together with `bson-rust` #3996627 (also Informative, on the explicit "requires MITM or a fully compromised server, an already-compromised environment" reasoning), that's three reports on this exact bug-class shape, all rejected on the same precondition. That's a consistent program position, and I'm treating it as one rather than citing it as a precedent that helps this submission.
 
-1. **No server involved**: any application calling `bson.BSON(data).decode()`/`bson.decode(data)` on bytes from a file, a message queue, an inter-service payload, or any other channel it does not fully trust. This needs no server, no network, and no MITM — only the two preconditions already stated (CPython 3.10/3.11, and the process having raised `sys.setrecursionlimit()` at some point).
-2. **A malicious or compromised server, or an on-path attacker on an unencrypted/improperly-verified connection** — the same precondition already present in the accepted `mongo-csharp-driver` finding (#3790290/#3996918); a real `mongod` opting out of its own limits, or an attacker controlling the wire bytes, is not bound by the server's storage-time validation.
+Given that, the only framing here I'd actually stand behind as likely in-scope:
 
-I'm not claiming a standard, unmodified `mongod` server will ever hand this back through ordinary use — it won't; that finding was already made explicit in this program's rejection of a similarly-shaped `bson-rust` report, and I'd rather state it than have it caught.
+**No server involved**: any application calling `bson.BSON(data).decode()`/`bson.decode(data)` on bytes from a file, a message queue, an inter-service payload, or any other channel it does not fully trust. This needs no server, no network, and no MITM — only the two preconditions already stated (CPython 3.10/3.11, and the process having raised `sys.setrecursionlimit()` at some point). It's the same threat model already fully proven, with no such caveat, in the sibling `mongo-tools`/`bsondump` finding from this same pass.
+
+The `Cursor.Decode`-via-a-hostile-server angle is described below for completeness, since it's still a real, reachable path through this same code — but given the program's demonstrated, repeated position on that exact precondition, I'd score it as likely Informative, not a strong part of this submission.
 
 ## Impact
 
 **Primary impact — no server involved**: on CPython 3.10 or 3.11, any process that has ever raised `sys.setrecursionlimit()` above its real native-stack-safe threshold can be crashed by decoding a single crafted BSON document from a file, queue, or any other untrusted byte source — no server or network access required at all.
 
-**Secondary impact — server-adjacent**: the same crash fires via `Cursor.Decode`-style query consumption if the connected server is malicious, compromised, or on-path-attacker-controlled — structurally the same precondition as the accepted C#-driver finding, and equally dependent on a hostile server/network position rather than a standard `mongod`.
+**Secondary impact — server-adjacent, likely Informative on this program's own track record**: the same crash fires via `Cursor.Decode`-style query consumption if the connected server is malicious, compromised, or on-path-attacker-controlled — but this exact precondition (no standard `mongod` can deliver it) is the stated reason three prior reports on this bug class (`mongo-csharp-driver` #3790290/#3996918, `bson-rust` #3996627) were closed Informative. Included for completeness, not as the strong part of this submission.
 
 In both cases, the crash is `SIGSEGV`, not a language-level uncatchable exception, so it also risks corrupting shared process state (other threads, memory-mapped files, unflushed buffers) rather than a clean unwind. No exception, no `try`/`except`, and no `signal`-based handler installed for anything other than `SIGSEGV` itself can intervene. For a long-running server process this takes down the entire process, not just the request or thread handling it.
 
