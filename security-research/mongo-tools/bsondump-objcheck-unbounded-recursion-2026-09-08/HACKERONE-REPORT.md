@@ -67,14 +67,25 @@ This is `mongo-tools`' own code (not the driver's) — it uses the lower-level `
 
 ## Steps to Reproduce
 
-Requirements: Go toolchain (`go1.26.5` used here via this module's own toolchain auto-selection), a clean clone of `mongo-tools` at the tag/commit above.
+**Step 1 — get the `bsondump` binary.** Building from source is not required — it's what I used because my testing environment couldn't reach `fastdl.mongodb.org` to pull the official release, not because a source build is somehow necessary to trigger this. Either of the following gets the same binary:
 
-**Step 1 — build the real, unmodified `bsondump` binary:**
+*Option A (preferred, no toolchain needed) — official prebuilt Database Tools release:*
+```
+curl -sL -o tools.tgz \
+  https://fastdl.mongodb.org/tools/db/mongodb-database-tools-<platform>-100.18.0.tgz
+tar xzf tools.tgz --strip-components=2
+./bsondump --version
+```
+(substitute the correct `<platform>` string from MongoDB's [download page](https://www.mongodb.com/try/download/database-tools) — e.g. `ubuntu2404-x86_64`.)
+
+*Option B (what I actually ran) — build from source, Go toolchain required:*
 ```
 git clone https://github.com/mongodb/mongo-tools.git
 cd mongo-tools && git checkout 100.18.0
 go build -o bsondump-bin ./bsondump/main/
 ```
+
+I have not personally verified Option A end-to-end in this pass — only Option B, since the download host was unreachable from my testing sandbox. There's nothing in the vulnerable code path (a pure Go logic bug reached by ordinary CLI flags) that would make a from-source build behave differently from the official release built from the identical tagged commit, but I'm flagging that I didn't independently confirm it rather than implying I did.
 
 **Step 2 — build a malicious `.bson` file** nested 2,000,000 levels deep (`{"a":{"a":{"a": ... }}}`, 8 bytes/level, 16,000,005 bytes total) — the identical construction used in the standalone `mongo-go-driver` PoC (single flat pre-allocated buffer, O(depth), included as `genfile.go` in this directory).
 
