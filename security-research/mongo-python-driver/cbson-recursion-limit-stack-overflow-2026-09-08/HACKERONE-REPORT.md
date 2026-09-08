@@ -93,13 +93,24 @@ Python 3.13.12 reproduces the same safe result (`poc_output_313_safe.txt`).
 
 Full raw output: `poc_output_311_crash.txt`, `poc_output_311_default_safe.txt`, `poc_output_312_safe.txt` (included in this directory).
 
-## Reachability
+## Reachability, and an important scope note stated up front
 
-Any application calling `bson.BSON(data).decode()`, `bson.decode(data)`, or (via `pymongo`) receiving and decoding a query result, a `find_one`, an aggregation stage, or any other server response goes through this exact `_cbsonmodule.c` decode path when the C extension is loaded (the default; pymongo falls back to the pure-Python decoder, which is unaffected — see Honest Caveats). The only precondition beyond "a malicious or compromised server, or an on-path attacker on an unencrypted/improperly-verified connection, returns one crafted document" (the same threat model already accepted for the C#-driver sibling, #3790290/#3996918) is that the connecting process must be running CPython 3.10 or 3.11 **and** must have, somewhere in its lifetime before the crash, called `sys.setrecursionlimit()` to a value large enough to disable the guard's protection at the attacker's chosen nesting depth (I used 100,000; the real threshold is lower and depends on per-frame stack usage and the process's configured stack size). Raising the recursion limit globally is a real, documented pattern used to work around unrelated `RecursionError`s (deep template rendering, deep tree/graph traversal, some YAML/JSON libraries) — once raised, it affects every C extension in the process that relies on `Py_EnterRecursiveCall`, including this one, for the rest of the process's life.
+**A genuine, unmodified `mongod`/`mongos` cannot itself be used to store and later return a document deep enough to trigger this crash** — MongoDB's server enforces its own document-nesting cap (rejects documents past roughly 200 levels) at write time. So "an ordinary query response from a standard server" is not, on its own, a route to this crash, and I don't want that discovered by a reviewer rather than disclosed by me here.
+
+The two threat models I believe make this a real finding regardless:
+
+1. **No server involved**: any application calling `bson.BSON(data).decode()`/`bson.decode(data)` on bytes from a file, a message queue, an inter-service payload, or any other channel it does not fully trust. This needs no server, no network, and no MITM — only the two preconditions already stated (CPython 3.10/3.11, and the process having raised `sys.setrecursionlimit()` at some point).
+2. **A malicious or compromised server, or an on-path attacker on an unencrypted/improperly-verified connection** — the same precondition already present in the accepted `mongo-csharp-driver` finding (#3790290/#3996918); a real `mongod` opting out of its own limits, or an attacker controlling the wire bytes, is not bound by the server's storage-time validation.
+
+I'm not claiming a standard, unmodified `mongod` server will ever hand this back through ordinary use — it won't; that finding was already made explicit in this program's rejection of a similarly-shaped `bson-rust` report, and I'd rather state it than have it caught.
 
 ## Impact
 
-On CPython 3.10 or 3.11, a process that has ever raised `sys.setrecursionlimit()` above its real native-stack-safe threshold can be crashed unconditionally and without warning by a single crafted document in an otherwise ordinary query response, exactly like the accepted C#-driver finding — except here the crash is `SIGSEGV`, not a language-level uncatchable exception, so it also risks corrupting shared process state (other threads, memory-mapped files, unflushed buffers) rather than a clean unwind. No exception, no `try`/`except`, and no `signal`-based handler installed for anything other than `SIGSEGV` itself can intervene. For a long-running server process this takes down the entire process, not just the request or thread handling it.
+**Primary impact — no server involved**: on CPython 3.10 or 3.11, any process that has ever raised `sys.setrecursionlimit()` above its real native-stack-safe threshold can be crashed by decoding a single crafted BSON document from a file, queue, or any other untrusted byte source — no server or network access required at all.
+
+**Secondary impact — server-adjacent**: the same crash fires via `Cursor.Decode`-style query consumption if the connected server is malicious, compromised, or on-path-attacker-controlled — structurally the same precondition as the accepted C#-driver finding, and equally dependent on a hostile server/network position rather than a standard `mongod`.
+
+In both cases, the crash is `SIGSEGV`, not a language-level uncatchable exception, so it also risks corrupting shared process state (other threads, memory-mapped files, unflushed buffers) rather than a clean unwind. No exception, no `try`/`except`, and no `signal`-based handler installed for anything other than `SIGSEGV` itself can intervene. For a long-running server process this takes down the entire process, not just the request or thread handling it.
 
 ## Suggested Fix
 
