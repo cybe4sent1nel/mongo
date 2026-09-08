@@ -94,16 +94,23 @@ cursor.All(ctx, &results)
 
 ## Steps to Reproduce
 
-Requirements: Go toolchain (`go1.25.0` used here — the module's own `go.mod` requires `>= 1.25.0`), a clean clone of `mongo-go-driver` at the tag/commit above.
+Requirements: Go toolchain only (`go1.25.0` used here). No local clone of `mongo-go-driver` is actually needed to reproduce the crash — that's only useful if you want to read the source alongside the crash trace, which is why I did it that way. The simplest path:
 
-**Step 1 — PoC module** (`main.go`, included in this directory), building a BSON binary document nested to an attacker-chosen depth via a single flat pre-allocated buffer (`buildNestedDoc`/`buildNestedArray` — O(depth), no repeated slice copies), then decoding it with the real, unmodified driver:
+```
+mkdir gopoc && cd gopoc
+go mod init gopoc
+go get go.mongodb.org/mongo-driver/v2@latest
+```
+then drop in `main.go` (included in this directory) and `go build`.
+
+**Step 1 — PoC module** (`main.go`), building a BSON binary document nested to an attacker-chosen depth via a single flat pre-allocated buffer (`buildNestedDoc`/`buildNestedArray` — O(depth), no repeated slice copies), then decoding it with the real, unmodified driver pulled straight from the module proxy:
 
 ```go
 var result bson.M
 err := bson.Unmarshal(data, &result)
 ```
 
-`go.mod` uses a `replace` directive pointing at a local clone of the exact commit under test — no driver source is modified.
+(What I actually ran used a `replace` directive pointing at a local clone of the exact commit instead of a plain `go get`, purely so I could cite exact line numbers against the source while reading the crash trace — it makes no difference to whether the crash reproduces.)
 
 **Step 2 — build and run at increasing depth:**
 

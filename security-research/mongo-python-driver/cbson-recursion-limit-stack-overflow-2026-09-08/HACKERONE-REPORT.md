@@ -49,7 +49,15 @@ Both call sites are correctly paired (`Enter`/`Leave` symmetric, error path hand
 
 ## Steps to Reproduce
 
-Requirements: `python3.10`, `python3.11`, `python3.12`, `python3.13` (all tested from Ubuntu 24.04's standard `python3.X` packages), a clean clone of `mongo-python-driver` at the tag/commit above, built for each interpreter (`pip install --no-build-isolation -e .`, or equivalently `python setup.py build_ext --inplace`) so each interpreter loads its own freshly-compiled `_cbson` extension — no driver source was modified for any of the four builds.
+**Fastest path — no source build needed at all**: PyPI ships prebuilt `manylinux` wheels with the compiled `_cbson` extension already inside, for every CPython version relevant here. On a plain Python 3.10 or 3.11 interpreter:
+```
+python3.11 -m venv venv && source venv/bin/activate
+pip install pymongo==4.18.0
+python poc.py 20000 raiselimit
+```
+This is the real, official, unmodified PyPI package — verified directly (`pip download pymongo==4.18.0 --python-version 311 --only-binary=:all: --platform manylinux2014_x86_64` resolves to `pymongo-4.18.0-cp311-cp311-manylinux2014_x86_64....whl`) and confirmed to reproduce the identical `SIGSEGV` (exit 139) with no compiler, no `pip install --no-build-isolation`, and no local clone involved.
+
+Requirements for the from-source path instead (`python3.10`, `python3.11`, `python3.12`, `python3.13`, all tested from Ubuntu 24.04's standard `python3.X` packages; a clean clone of `mongo-python-driver` at the tag/commit above, built per interpreter via `pip install --no-build-isolation -e .`): this is what I actually used to run the four-way version comparison in one pass and to cite exact source line numbers — not because a source build is necessary to reproduce the crash itself. No driver source was modified for any of the four builds.
 
 **PoC** (`poc.py`, included in this directory) builds a BSON document nested to an attacker-chosen depth via a single flat pre-allocated `bytearray` (O(depth), no repeated copies), then decodes it with the real, unmodified extension:
 
