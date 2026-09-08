@@ -1,0 +1,40 @@
+runtime: goroutine stack exceeds 1000000000-byte limit
+runtime: sp=0x37cd73602388 stack=[0x37cd73602000, 0x37cd93602000]
+fatal error: stack overflow
+
+runtime stack:
+runtime.throw({0x89c34b?, 0xaaa01?})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/panic.go:1229 +0x48 fp=0x7ff022ffcd10 sp=0x7ff022ffcce0 pc=0x485728
+runtime.newstack()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/stack.go:1178 +0x5fd fp=0x7ff022ffce40 sp=0x7ff022ffcd10 pc=0x46ad9d
+runtime.morestack()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/asm_amd64.s:681 +0x7d fp=0x7ff022ffce48 sp=0x7ff022ffce40 pc=0x48b3fd
+
+goroutine 1 gp=0x37cd523fa1e0 m=10 mp=0x37cd53600808 [running]:
+runtime.mapaccess1_fast32(0x823440?, 0x0?, 0x64140?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/internal/runtime/maps/runtime_fast32.go:15 +0x1f0 fp=0x37cd73602398 sp=0x37cd73602390 pc=0x412330
+runtime.resolveTypeOff(0x0?, 0x64140)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/type.go:355 +0x7c fp=0x37cd736023f0 sp=0x37cd73602398 pc=0x47d5dc
+runtime.rtype.typeOff(...)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/type.go:367
+reflect.resolveTypeOff(0x0?, 0x0?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/runtime1.go:672 +0x13 fp=0x37cd73602410 sp=0x37cd736023f0 pc=0x486a33
+reflect.(*rtype).typeOff(...)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/reflect/type.go:590
+reflect.(*rtype).ptrTo(0x88aa00?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/reflect/type.go:1421 +0x99 fp=0x37cd73602488 sp=0x37cd73602410 pc=0x4dab99
+reflect.ptrTo(...)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/reflect/type.go:1463
+reflect.New({0x8d3148?, 0x81b200})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/reflect/value.go:3159 +0x45 fp=0x37cd736024b8 sp=0x37cd73602488 pc=0x4d7a65
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x8c6520, 0x8c12b0}, {0x37cd5257aa00, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-tools-audit/vendor/go.mongodb.org/mongo-driver/v2/bson/bsoncodec.go:200 +0x18c fp=0x37cd73602548 sp=0x37cd736024b8 pc=0x533d6c
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).decodeType(0x37cd525538f0, {0x37cd5257aa00, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-tools-audit/vendor/go.mongodb.org/mongo-driver/v2/bson/empty_interface_codec.go:99 +0x365 fp=0x37cd73602640 sp=0x37cd73602548 pc=0x54bf25
+go.mongodb.org/mongo-driver/v2/bson.(*emptyInterfaceCodec).DecodeValue(0x37cd525538f0, {0x37cd5257aa00, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-tools-audit/vendor/go.mongodb.org/mongo-driver/v2/bson/empty_interface_codec.go:120 +0x198 fp=0x37cd73602710 sp=0x37cd73602640 pc=0x54c258
+go.mongodb.org/mongo-driver/v2/bson.dDecodeValue({0x37cd5257aa00, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ...)
+	/home/user/mongo-tools-audit/vendor/go.mongodb.org/mongo-driver/v2/bson/default_value_decoders.go:157 +0x68d fp=0x37cd73602880 sp=0x37cd73602710 pc=0x53a34d
+go.mongodb.org/mongo-driver/v2/bson.ValueDecoderFunc.DecodeValue(0x37cd73602960?, {0x37cd5257aa00, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
+	/home/user/mongo-tools-audit/vendor/go.mongodb.org/mongo-driver/v2/bson/bsoncodec.go:158 +0x6a fp=0x37cd736028e0 sp=0x37cd73602880 pc=0x533aca
+go.mongodb.org/mongo-driver/v2/bson.decodeTypeOrValueWithInfo({0x8c6520, 0x8c12b0}, {0x37cd5257aa00, 0x0, {0x0, 0x0}, 0x0, 0x0, 0x0, 0x0, ...}, ...)

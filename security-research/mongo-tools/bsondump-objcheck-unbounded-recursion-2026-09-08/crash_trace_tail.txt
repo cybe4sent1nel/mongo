@@ -1,0 +1,60 @@
+
+goroutine 10 gp=0x37cd5250cf00 m=nil [GC worker (idle)]:
+runtime.gopark(0x213884cec76?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x37cd5244e740 sp=0x37cd5244e720 pc=0x48584e
+runtime.gcBgMarkWorker(0x37cd52500bd0)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x37cd5244e7c8 sp=0x37cd5244e740 pc=0x42ea6b
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x37cd5244e7e0 sp=0x37cd5244e7c8 pc=0x42e957
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x37cd5244e7e8 sp=0x37cd5244e7e0 pc=0x48cec1
+created by runtime.gcBgMarkStartWorkers in goroutine 1
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 11 gp=0x37cd5250d0e0 m=nil [GC worker (idle)]:
+runtime.gopark(0x213884cf275?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x37cd5244ef40 sp=0x37cd5244ef20 pc=0x48584e
+runtime.gcBgMarkWorker(0x37cd52500bd0)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x37cd5244efc8 sp=0x37cd5244ef40 pc=0x42ea6b
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x37cd5244efe0 sp=0x37cd5244efc8 pc=0x42e957
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x37cd5244efe8 sp=0x37cd5244efe0 pc=0x48cec1
+created by runtime.gcBgMarkStartWorkers in goroutine 1
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 12 gp=0x37cd5250d2c0 m=nil [GC worker (idle)]:
+runtime.gopark(0xc64100?, 0x1?, 0xb?, 0x93?, 0x0?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x37cd5244f740 sp=0x37cd5244f720 pc=0x48584e
+runtime.gcBgMarkWorker(0x37cd52500bd0)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x37cd5244f7c8 sp=0x37cd5244f740 pc=0x42ea6b
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x37cd5244f7e0 sp=0x37cd5244f7c8 pc=0x42e957
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x37cd5244f7e8 sp=0x37cd5244f7e0 pc=0x48cec1
+created by runtime.gcBgMarkStartWorkers in goroutine 1
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 18 gp=0x37cd5248c780 m=nil [select, locked to thread]:
+runtime.gopark(0x37cd524557a8?, 0x2?, 0xa8?, 0x56?, 0x37cd52455794?)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x37cd52455628 sp=0x37cd52455608 pc=0x48584e
+runtime.selectgo(0x37cd524557a8, 0x37cd52455790, 0x0?, 0x0, 0x0?, 0x1)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/select.go:351 +0xaa5 fp=0x37cd52455758 sp=0x37cd52455628 pc=0x463d05
+runtime.ensureSigM.func1()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/signal_unix.go:1091 +0x188 fp=0x37cd524557e0 sp=0x37cd52455758 pc=0x480288
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x37cd524557e8 sp=0x37cd524557e0 pc=0x48cec1
+created by runtime.ensureSigM in goroutine 8
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/signal_unix.go:1074 +0xc5
+
+goroutine 34 gp=0x37cd536043c0 m=7 mp=0x37cd52488808 [syscall]:
+runtime.notetsleepg(0xc632e0, 0xffffffffffffffff)
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/lock_futex.go:123 +0x29 fp=0x37cd536167a0 sp=0x37cd53616778 pc=0x4208e9
+os/signal.signal_recv()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/sigqueue.go:152 +0x98 fp=0x37cd536167c0 sp=0x37cd536167a0 pc=0x487a78
+os/signal.loop()
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/os/signal/signal_unix.go:23 +0x13 fp=0x37cd536167e0 sp=0x37cd536167c0 pc=0x766733
+runtime.goexit({})
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x37cd536167e8 sp=0x37cd536167e0 pc=0x48cec1
+created by os/signal.Notify.func1.1 in goroutine 8
+	/root/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.5.linux-amd64/src/os/signal/signal.go:152 +0x1f
