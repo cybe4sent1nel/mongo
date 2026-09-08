@@ -1,0 +1,4 @@
+recursion limit=100000, depth=200000
+built 1600005 bytes, decoding...
+caught (safe): InvalidBSON: maximum recursion depth exceeded while decoding a BSON document
+exit code: 0
