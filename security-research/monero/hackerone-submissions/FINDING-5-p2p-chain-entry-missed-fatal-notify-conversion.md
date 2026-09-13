@@ -18,12 +18,25 @@ Rationale:
 
 ## Affected Versions
 
-Confirmed present, by direct source comparison, in:
-- `v0.18.5.1` (latest tagged release, commit `4f92268d7c16741cfb41e5bbe2aa46cc260a9ea5`)
-- current `master` (commit `9e3a31032ee2cf3cb65c908e107a9952d03bbc4f`)
-- the `release-v0.18` branch (the pre-release line for the next `v0.18.5.x` patch), specifically **after** it already contains the fix commit that converted every sibling branch in the same function
+**Primary: current `master`, commit `9e3a31032ee2cf3cb65c908e107a9952d03bbc4f`** — this is the actively maintained, actively committed-to branch, and the one the citations below are pinned against:
+- Function and its first branch, already correctly converted to the fixed convention:
+  https://github.com/monero-project/monero/blob/9e3a31032ee2cf3cb65c908e107a9952d03bbc4f/src/cryptonote_protocol/cryptonote_protocol_handler.inl#L2509-L2520
+- The one branch still using the old, non-fatal convention:
+  https://github.com/monero-project/monero/blob/9e3a31032ee2cf3cb65c908e107a9952d03bbc4f/src/cryptonote_protocol/cryptonote_protocol_handler.inl#L2664-L2669
 
-This is not something a future patch release is going to close incidentally — the branch that will become the next release has the general fix applied everywhere else in this exact function and still has this one site unconverted, which is why I'm reporting it as a live gap rather than something already caught.
+Also confirmed present in:
+- the `release-v0.18` branch (the pre-release line for the next `v0.18.5.x` patch), specifically **after** it already contains the fix commit that converted every sibling branch in the same function — so this is not something the next patch release is going to close incidentally.
+- `v0.18.5.1`, the latest tagged release, commit `4f92268d7c16741cfb41e5bbe2aa46cc260a9ea5` — but with an important difference from `master` worth stating precisely rather than glossing over: in this release, the underlying dispatch-stopping mechanism itself does not exist yet at all. The levin recv loop in this version (`contrib/epee/include/net/levin_protocol_handler_async.h`) calls the notify handler and **discards its return value outright**:
+  ```cpp
+  else
+    m_config.m_pcommands_handler->notify(m_current_head.m_command, buff_to_invoke, m_connection_context);
+  ```
+  https://github.com/monero-project/monero/blob/4f92268d7c16741cfb41e5bbe2aa46cc260a9ea5/contrib/epee/include/net/levin_protocol_handler_async.h#L565
+  So in `v0.18.5.1` the same underlying behavior (a connection dropped mid-buffer doesn't stop the dispatch loop from acting on further pipelined messages from it) applies to *every* branch of `handle_response_chain_entry`, not only the one branch called out above for `master` — the fix hasn't landed at all yet, rather than having landed everywhere except one place. Same vulnerability, reachable more broadly there:
+  https://github.com/monero-project/monero/blob/4f92268d7c16741cfb41e5bbe2aa46cc260a9ea5/src/cryptonote_protocol/cryptonote_protocol_handler.inl#L2470-L2481 (function's first branch, still `return 1;` here)
+  https://github.com/monero-project/monero/blob/4f92268d7c16741cfb41e5bbe2aa46cc260a9ea5/src/cryptonote_protocol/cryptonote_protocol_handler.inl#L2623-L2628 (the same `request_missing_objects` branch as the master citation above)
+
+The master citation is the one this report is centered on: a live gap in the actively maintained branch, left behind by a fix that closed every other instance of the same pattern in the identical function.
 
 ## Root Cause
 
