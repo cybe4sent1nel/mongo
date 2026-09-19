@@ -5,6 +5,29 @@
 - **`circlefin/arc-remote-signer`** — the sole in-scope asset for this finding.
   - `docker/run_enclave.sh` — the actual production Nitro Enclave entrypoint (confirmed distinct from the dev-only `run_enclave.dev.sh`, and the one `docker/Dockerfile.enclave` sets as `ENTRYPOINT`).
   - `docker/Dockerfile.enclave` — confirms `run_enclave.sh` is the real image entrypoint and that `socat`/`iproute2` are the only extra packages installed specifically to support this bridging.
+  - `docker/run.sh` — the host-side counterpart, which sets up the corresponding `VSOCK-LISTEN` sockets the enclave connects out to. Read after the initial draft of this report; see "Correction" immediately below — it materially changes which attacker model this finding actually supports.
+
+## Correction (added after reading the host-side counterpart script)
+
+My first pass at this finding, based on `docker/run_enclave.sh` alone, framed the risk as "a malicious host can trick the enclave into leaking its logs/telemetry by lying about `APP_ENV`." Having then read `docker/run.sh` (the host-side script that creates the `VSOCK-LISTEN` sockets the enclave's outbound `VSOCK-CONNECT` calls land on), that framing overstates the case, and I want to correct it rather than leave it standing:
+
+```bash
+# docker/run.sh, setup_vsock_bridges()
+socat VSOCK-LISTEN:8000,reuseaddr,fork SYSTEM:'echo \"$APP_ENV|$DD_SERVICE|$DD_ENV|$DD_ENTITY_ID\"' &
+if [ "$APP_ENV" != "prod" ]; then
+    socat VSOCK-LISTEN:4317,reuseaddr,fork TCP:$OTEL_HOST:4317 &
+    socat VSOCK-LISTEN:8126,reuseaddr,fork TCP:$DD_AGENT_HOST:8126 &
+    socat VSOCK-LISTEN:8125,reuseaddr,fork TCP:$APP_CONFIG_OPTION_STATSD_HOST:$APP_CONFIG_OPTION_STATSD_PORT &
+    socat -u VSOCK-LISTEN:8001,reuseaddr,fork EXEC:"cat",stderr &
+fi
+```
+
+Two things follow from this that change the correct attacker model:
+
+1. **A genuinely malicious/compromised host does not need the enclave's cooperation to receive this data.** The host unilaterally controls whether anything is listening on the VSOCK ports the enclave tries to connect out to (`4317`/`8126`/`8125`/`8001`). A compromised host can simply always run listeners there — it has no need to first convince the enclave that `APP_ENV != prod`, since the enclave's outbound connection attempt succeeds or fails based purely on whether the host chose to listen, not on any belief the enclave holds. In other words, the fail-open default inside the enclave does not *grant* a fully malicious host any capability it did not already have.
+2. **The scenario where the enclave's fail-open default actually matters is operator misconfiguration, not active exploitation.** In a correctly configured production deployment, the host's own `docker/run.sh` gates its listener creation on the *same* `APP_ENV` value (read from the container's own environment, set by the operator/orchestrator — not attacker-controlled), so in the intended case, the host-side sockets for `4317`/`8126`/`8125`/`8001` simply do not exist, and the enclave's `VSOCK-CONNECT` attempts fail closed regardless of what the enclave itself believes. The residual risk is: **if the operator ever fails to set `APP_ENV=prod` correctly on either side (a plausible ops mistake — wrong env var name, unset default, environment promotion error), both sides independently default to the more permissive, bridging-enabled posture**, and the enclave's logs and telemetry start flowing to whatever is listening on the host side of those VSOCK ports — which could be legitimate staging telemetry infrastructure, or, if that same host has independently been compromised, an attacker's listener.
+
+So this finding is best understood as **an insecure-by-default configuration risk that removes a layer of defense-in-depth against operator misconfiguration**, rather than a channel a purely passive or network-positioned attacker can unilaterally force open against a correctly configured deployment. I'm keeping the severity at High rather than raising it, and describing the risk in those terms below, rather than continuing to imply an active host-side attacker gains something new from the enclave's default — they largely do not, in the fully-compromised-host threat model this project's own README centers.
 
 ## Summary
 
@@ -45,9 +68,9 @@ Requested severity: **High** (not Critical/Extreme like FINDING-1/FINDING-4, sin
 Suggested CVSS v3.1: `6.5` (`AV:A/AC:L/PR:N/UI:N/S:C/C:L/I:N/A:N`) reflecting an adjacent-network(same-host-hypervisor)-positioned attacker (the host, per this project's own threat model) gaining a low-but-nonzero confidentiality impact today, with materially higher realistic impact contingent on future logging/tracing changes this report also flags as a risk multiplier.
 
 Rationale:
-1. The trust direction is backwards for this architecture specifically: the host is the explicitly named adversary, yet it single-handedly and unilaterally controls whether the enclave opens outbound-to-host data channels, with no attestation or verification of the value it supplies.
+1. The trust direction is backwards for this architecture specifically: the enclave's own belief about whether it should open outbound-to-host data channels is bootstrapped from an unauthenticated, unattested value the host supplies — even though (per the Correction above) a fully malicious host does not strictly need this mechanism to receive the same data, the enclave's internal logic should not be designed to fail open on an untrusted input in the first place, and a partially-compromised-host scenario (e.g., an attacker able to influence only this one VSOCK response, short of full host compromise) does gain something real from it.
 2. The default (fail-open) behavior is the permissive one, not the restrictive one — a design choice that works against every other defense-in-depth control in this codebase, and is inconsistent with how carefully the *cryptographic* trust boundary (PCR-pinned KMS attestation, per `Dockerfile.enclave`'s own "WARNING: Changing any of these pins will produce a different enclave image, invalidating the PCR hashes" comment) is otherwise handled in this same project.
-3. Confirmed no direct secret exposure today, which is why this is not filed at the same severity as FINDING-1/FINDING-4 — but the blast radius the moment any future enclave-side code adds a moderately verbose log or trace attribute is the same class of impact as those findings, and nothing in the current design would catch that regression before it silently starts leaking to the host.
+3. Confirmed no direct secret exposure today, which is why this is not filed at the same severity as FINDING-1/FINDING-4 — but the blast radius the moment any future enclave-side code adds a moderately verbose log or trace attribute is the same class of impact as those findings, and nothing in the current design would catch that regression before it silently starts leaking to the host, particularly in the realistic case of an operator misconfiguring `APP_ENV` on one or both sides.
 
 ## Affected Versions
 
