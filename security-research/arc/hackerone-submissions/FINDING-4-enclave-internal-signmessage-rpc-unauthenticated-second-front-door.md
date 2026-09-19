@@ -9,6 +9,29 @@
   - `internal/common/grpc/server/option.go` (`WithListener`) — confirms `ListenerTransportTCP` binds `host:port` from config, while `ListenerTransportVSOCK` ignores `host` entirely and only takes `port`.
   - `configs/enclave.yaml` — the shipped default configuration for this exact server.
   - `internal/common/grpc/client/client.go` (`InsecureDialOptions`) — confirms the host↔enclave gRPC channel is `grpc.WithTransportCredentials(insecure.NewCredentials())` regardless of transport.
+  - `deployments/docker-compose.yaml` — the project's own shipped dev-deployment manifest, which sets `APP_NITROENCLAVE_ENABLED: false` for the `enclave` service and publishes `ports: - "10350:10350"` — see "Confirmed live, not hypothetical" below.
+
+## Confirmed live, not hypothetical: the project's own shipped `docker-compose.yaml`
+
+After writing the analysis below from source alone, I checked `deployments/docker-compose.yaml` — the exact manifest this repository's own tooling uses (referenced by the same `make dev` workflow FINDING-1's reproduction steps use) — and it removes any doubt that this is a contrived scenario:
+
+```yaml
+services:
+  enclave:
+    image: "nitro-enclave-signer-internal:local"
+    environment:
+      ...
+      APP_NITROENCLAVE_ENABLED: false        # <-- non-Nitro TCP mode, explicitly
+    ulimits:
+      memlock: -1
+    ports:
+      - "10350:10350"                        # <-- explicitly published to the host
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=127.0.0.1:10350", "-service=arc.enclave.v1.EnclaveService"]
+    entrypoint: ["/usr/local/circle/run_enclave.dev.sh"]
+```
+
+This is not a matter of an operator having to remember to flip a flag differently from the shipped template — **the project's own default dev deployment runs the enclave binary with `NitroEnclave.Enabled=false` and explicitly publishes port `10350` to the host**, exactly the precondition this finding requires. Every environment that runs this stack — CI, local dev, or any deployment that copies this compose file as a starting point without hardening it (the same class of deployment behavior FINDING-1's own severity argument already relies on) — has this unauthenticated, unencrypted signing oracle reachable the moment the host's `10350` is reachable from anywhere else (another container on the same Docker network, or the host's own network interface if not additionally firewalled).
 
 ## Summary
 
