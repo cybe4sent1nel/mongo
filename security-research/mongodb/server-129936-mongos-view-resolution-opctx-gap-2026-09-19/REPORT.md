@@ -2,6 +2,14 @@
 
 SERVER-129936 / CVE-2026-18704's fix does not cover mongos's view-query resolution path — `PipelineResolver::buildResolvedMongosViewRequest` re-lite-parses the client's pipeline with `opCtx` unset in two separate branches, reopening the exact `$_internalSearchIdLookup.viewPipeline` smuggling bug for any aggregate run against a view through mongos
 
+## CORRECTION (2026-09-19, added after further review)
+
+After being shown an independent HackerOne report (#3964434, "shinchan_69", closed Duplicate) describing the *actual* still-open instance of this bug class — a gap in `view_catalog_helpers.cpp`'s view-**creation**-time validation, which I independently confirmed is still present and unpatched on `r8.3.11` — I re-traced the call chain into `buildResolvedMongosViewRequest` more carefully and found I overstated this report's independent exploitability.
+
+`buildResolvedMongosViewRequest` is only ever called from `cluster_aggregate.cpp`, downstream of `ClusterPipelineCommandBase::Invocation`'s constructor — the exact call site SERVER-129936 fixed, which lite-parses the same incoming request with `opCtx` set *before* execution-time code (including this function) ever runs. A malicious `$_internalSearchIdLookup.viewPipeline` in a client's own top-level submitted pipeline would already be rejected at that earlier, fixed gate; it never reaches the gap described below. The gap is real at the code level (the omission described here is accurate), but for it to matter, the malicious field would have to originate from a *view's own stored pipeline* rather than the querying client's request — which requires the field to have survived view creation in the first place, i.e. the same prerequisite as the still-open `view_catalog_helpers.cpp` bug (HackerOne #3964434), not an independent new path. I checked the same "does an earlier, already-safe lite-parse make this one redundant" question against 6 further `LiteParserOptions` construction sites in the codebase and found the same answer each time (either genuinely downstream of the fixed gate, or — as with `$rankFusion`'s sub-pipelines — correctly threading the outer, already-gated options under a different variable name).
+
+I'm leaving the rest of this report as originally written, since the code-level observation is accurate and may still be worth closing for defense-in-depth, but it should not be read as describing an independently exploitable vulnerability distinct from the still-open HackerOne #3964434 report.
+
 ## Summary
 
 SERVER-129936/CVE-2026-18704 (fixed and present on `r8.3.11`, confirmed below) closed the `$_internalSearchIdLookup.viewPipeline` internal-field-smuggling bug at exactly one call site: `ClusterPipelineCommandBase::Invocation`'s constructor in `src/mongo/s/commands/query_cmd/cluster_pipeline_cmd.h`, which now threads a real `opCtx` into the `LiteParserOptions` used for the top-level authorization-time lite-parse of an incoming `aggregate` command on mongos.
